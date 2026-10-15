@@ -253,7 +253,91 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Monitoring').last);
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Monitoring'), findsOneWidget);
+    expect(
+      find.text('Track pets, adopters, and application status.'),
+      findsOneWidget,
+    );
+    app.adminWorkspace['adoption_records'] = [
+      {
+        'id': 'placement-1',
+        'pet_id': 'pet-1',
+        'pet_name': 'Luna',
+        'adopter_name': 'Angel Garcia',
+        'status': 'monitoring',
+        'applicationStatus': 'Approved - Awaiting Placement',
+      },
+    ];
+    app.adminWorkspace['monitoring_updates'] = [
+      {
+        'id': 'update-1',
+        'pet_name': 'Max',
+        'adopter_name': 'Long adopter name for responsive testing',
+        'status': 'pending_review',
+        'created_at': '2026-10-15T10:00:00Z',
+        'pet_condition': 'Comfortable and active',
+        'feeding': 'Twice each day',
+        'health': 'Veterinary check completed',
+        'behavior': 'Settling in with the family',
+      },
+      {
+        'id': 'update-2',
+        'pet_name': 'Rocky',
+        'adopter_name': 'Jamie',
+        'status': 'reviewed',
+        'created_at': '2026-10-14T10:00:00Z',
+        'admin_notes': 'Follow-up received.',
+      },
+    ];
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    for (final width in [320.0, 360.0, 390.0, 412.0, 768.0]) {
+      tester.view.physicalSize = Size(width, 1000);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'Monitoring at $width');
+    }
+    tester.view.physicalSize = const Size(320, 700);
+    tester.platformDispatcher.textScaleFactorTestValue = 1.7;
+    app.themePreference = AppThemePreference.dark;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Needs clarification'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Needs clarification'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Explain what the adopter needs to clarify.'),
+      findsOneWidget,
+    );
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
+    app.themePreference = AppThemePreference.defaultTheme;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byTooltip('Filter monitoring'),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byTooltip('Filter monitoring'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Reviewed').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'does-not-exist');
+    await tester.pumpAndSettle();
+    expect(find.text('No monitoring updates'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, 'Rocky');
+    await tester.pumpAndSettle();
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == 'Rocky',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Max'), findsNothing);
     await tester.tap(find.text('More'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('System evaluation'));

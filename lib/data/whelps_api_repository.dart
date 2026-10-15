@@ -603,6 +603,7 @@ class WhelpsApiRepository
       'adoption_records': placements
           .map(
             (row) => {
+              ...row,
               'id': row['id'],
               'pet_name': row['petName'],
               'adopter_name': row['adopterName'],
@@ -613,6 +614,7 @@ class WhelpsApiRepository
       'monitoring_updates': records
           .map(
             (row) => {
+              ...row,
               'id': row['id'],
               'pet_name': row['petName'],
               'adopter_name': row['adopterName'],
@@ -621,6 +623,7 @@ class WhelpsApiRepository
               'health': row['healthObservations'],
               'behavior': row['behaviorUpdate'],
               'created_at': row['submittedAt'],
+              'admin_notes': row['adminNotes'] ?? row['admin_notes'],
               'status': '${row['reviewStatus']}' == 'Pending Review'
                   ? 'pending_review'
                   : '${row['reviewStatus']}'.toLowerCase().replaceAll(' ', '_'),

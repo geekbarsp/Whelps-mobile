@@ -11,6 +11,7 @@ import '../../core/backend_config.dart';
 part 'admin_dashboard.dart';
 part 'admin_pets.dart';
 part 'admin_applications.dart';
+part 'admin_monitoring.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -32,7 +33,7 @@ class _AdminShellState extends State<AdminShell> {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return Scaffold(
-      appBar: tab <= 2
+      appBar: tab <= 3
           ? null
           : AppBar(
               title: Column(
@@ -63,7 +64,7 @@ class _AdminShellState extends State<AdminShell> {
               ],
             ),
       body: SafeArea(
-        top: tab <= 2,
+        top: tab <= 3,
         child: IndexedStack(
           index: tab,
           children: [
@@ -136,176 +137,6 @@ class _MiniStat extends StatelessWidget {
       ],
     ),
   );
-}
-
-class _MonitoringTab extends StatefulWidget {
-  const _MonitoringTab();
-  @override
-  State<_MonitoringTab> createState() => _MonitoringTabState();
-}
-
-class _MonitoringTabState extends State<_MonitoringTab> {
-  String search = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    bool matches(Map<String, dynamic> row) =>
-        _value(row).toLowerCase().contains(search.toLowerCase());
-    final records = _rows(app, 'adoption_records').where(matches).toList();
-    final active = records
-        .where((row) => '${row['status']}' != 'completed')
-        .toList();
-    final completed = records
-        .where((row) => '${row['status']}' == 'completed')
-        .toList();
-    final updates = _rows(app, 'monitoring_updates').where(matches).toList();
-    return _RefreshPage(
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 32),
-        children: [
-          TextField(
-            onChanged: (value) => setState(() => search = value),
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search_rounded),
-              hintText: 'Pet, adopter, or status',
-            ),
-          ),
-          const SizedBox(height: 20),
-          _SectionTitle('Active monitoring', '${active.length} active'),
-          const SizedBox(height: 10),
-          if (active.isEmpty)
-            const EmptyState(
-              icon: Icons.monitor_heart_outlined,
-              title: 'No active monitoring',
-              message: 'Approved placements will appear here.',
-            )
-          else
-            for (final row in active)
-              _DataCard(
-                title: '${row['pet_name'] ?? 'Pet ${_shortId(row['pet_id'])}'}',
-                status: _pretty('${row['status']}'),
-                lines: [
-                  'Adopter ${row['adopter_name'] ?? _shortId(row['adopter_id'])}',
-                  'Approved ${_date(row['approved_at'])}',
-                ],
-              ),
-          const SizedBox(height: 20),
-          _SectionTitle('Monitoring updates', '${updates.length} received'),
-          const SizedBox(height: 10),
-          if (updates.isEmpty)
-            const EmptyState(
-              icon: Icons.update_rounded,
-              title: 'No monitoring updates',
-              message: 'Adopter check-ins will appear here for review.',
-            )
-          else
-            for (final row in updates) _MonitoringUpdateCard(row: row),
-          if (completed.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            _SectionTitle('Completed adoptions', '${completed.length} total'),
-            const SizedBox(height: 10),
-            for (final row in completed)
-              _DataCard(
-                title: '${row['pet_name'] ?? 'Pet ${_shortId(row['pet_id'])}'}',
-                status: 'Completed',
-                lines: ['Completed ${_date(row['completed_at'])}'],
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _MonitoringUpdateCard extends StatelessWidget {
-  final Map<String, dynamic> row;
-  const _MonitoringUpdateCard({required this.row});
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: FurUSectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${row['pet_name'] ?? 'Pet'} · ${row['adopter_name'] ?? 'Adopter'}',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              FurUStatusBadge(_pretty('${row['status'] ?? 'pending_review'}')),
-            ],
-          ),
-          Text(
-            'Submitted ${_date(row['created_at'])}',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 12),
-          for (final entry in const {
-            'pet_condition': 'Pet condition',
-            'feeding': 'Feeding',
-            'health': 'Health',
-            'behavior': 'Behavior',
-          }.entries)
-            if ('${row[entry.key] ?? ''}'.trim().isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 7),
-                child: Text('${entry.value}: ${row[entry.key]}'),
-              ),
-          if ('${row['status'] ?? ''}' == 'pending_review') ...[
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                FilledButton.icon(
-                  onPressed: () => _reviewMonitoring(context, row, false),
-                  icon: const Icon(Icons.check_rounded),
-                  label: const Text('Mark reviewed'),
-                ),
-                OutlinedButton(
-                  onPressed: () => _reviewMonitoring(context, row, true),
-                  child: const Text('Needs clarification'),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    ),
-  );
-}
-
-Future<void> _reviewMonitoring(
-  BuildContext context,
-  Map<String, dynamic> row,
-  bool clarification,
-) async {
-  try {
-    await AppScope.of(context).runAdminAction('review_monitoring', {
-      'monitoring_update_id': row['id'],
-      'status': clarification ? 'needs_clarification' : 'reviewed',
-      'reason': clarification
-          ? 'The administrator requested clarification.'
-          : 'Monitoring update reviewed.',
-    });
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            clarification ? 'Clarification requested.' : 'Update reviewed.',
-          ),
-        ),
-      );
-    }
-  } catch (error) {
-    if (context.mounted) showError(context, error);
-  }
 }
 
 class _ApprovalsTab extends StatefulWidget {
@@ -2411,20 +2242,6 @@ class _ActivityTile extends StatelessWidget {
         ],
       ),
     ),
-  );
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title, trailing;
-  const _SectionTitle(this.title, this.trailing);
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      Expanded(
-        child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-      ),
-      Text(trailing, style: Theme.of(context).textTheme.bodySmall),
-    ],
   );
 }
 
