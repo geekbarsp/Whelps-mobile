@@ -213,9 +213,14 @@ class WhelpsApiRepository
 
   Future<Map<String, dynamic>> _account(Map<String, dynamic> user) async {
     _currentUser = user;
-    final applications = _list(
-      (await _request('/api/applications', authenticated: true))['applications'],
-    );
+    final applications = '${user['role']}' == 'ADMIN'
+        ? <Map<String, dynamic>>[]
+        : _list(
+            (await _request(
+              '/api/applications',
+              authenticated: true,
+            ))['applications'],
+          );
     final local = _local();
     final remote = applications.map(_submissionFromApplication).toList();
     final drafts = _list(local['drafts'])

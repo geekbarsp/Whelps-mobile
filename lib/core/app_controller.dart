@@ -61,7 +61,13 @@ class AppController extends ChangeNotifier {
         } else {
           await _restore(email);
         }
-        if (isAdmin) await refreshAdminData();
+        if (isAdmin) {
+          if (repository is RemoteAuthRepository) {
+            unawaited(refreshAdminData());
+          } else {
+            await refreshAdminData();
+          }
+        }
       }
     } catch (_) {
       error = usesSecureBackend
@@ -174,8 +180,8 @@ class AppController extends ChangeNotifier {
     if (repository case RemoteAuthRepository remote) {
       final data = await remote.signInRemote(email, password);
       _applyAccount(data);
-      if (isAdmin) await refreshAdminData();
       notifyListeners();
+      if (isAdmin) unawaited(refreshAdminData());
       return;
     }
     final data = await repository.loadAccount(email);
