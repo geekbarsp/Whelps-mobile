@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {"name": "FurU (selected device)", "request": "launch", "type": "dart", "program": "lib/main.dart"},
+    {"name": "FurU (Chrome)", "request": "launch", "type": "dart", "program": "lib/main.dart", "deviceId": "chrome"},
+    {
+      "name": "FurU Online (selected device)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": ["--dart-define-from-file", "config/whelps.json"]
+    },
+    {
+      "name": "FurU Online (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "toolArgs": ["--dart-define-from-file", "config/whelps.json"]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "errors": [],
+  "widths": [
+    320,
+    360,
+    390,
+    412,
+    768
+  ],
+  "checks": [
+    "welcome",
+    "navigation",
+    "rescue contacts",
+    "pet details",
+    "adoption contact keyboard entry",
+    "draft save and exit",
+    "rehoming dropdowns",
+    "photo picker",
+    "document picker"
+  ],
+  "url": "http://127.0.0.1:8080/"
+}

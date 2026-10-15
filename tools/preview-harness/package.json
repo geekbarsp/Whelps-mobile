@@ -1,0 +1,1 @@
+{"name":"furu-preview-validation","displayName":"FurU Preview Validation","version":"1.0.0","publisher":"local","engines":{"vscode":"^1.90.0"},"main":"extension.cjs","activationEvents":[]}

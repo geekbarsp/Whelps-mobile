@@ -1,0 +1,7 @@
+{
+  "extension": "lirobi.phone-preview",
+  "version": "3.1.10",
+  "command": "mobile-preview.show",
+  "url": "http://localhost:8080",
+  "activated": true
+}
