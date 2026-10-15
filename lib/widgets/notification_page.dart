@@ -6,9 +6,15 @@ import 'components.dart';
 class FurUNotificationPage extends StatelessWidget {
   final Widget? child;
   final String emptyMessage;
+  final Widget? headerAction;
+  final Widget? bottomBar;
+  final VoidCallback? onBack;
   const FurUNotificationPage({
     super.key,
     this.child,
+    this.headerAction,
+    this.bottomBar,
+    this.onBack,
     this.emptyMessage =
         'Draft reminders and application updates will appear here.',
   });
@@ -16,6 +22,9 @@ class FurUNotificationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final stackedAction =
+        MediaQuery.sizeOf(context).width < 370 ||
+        MediaQuery.textScalerOf(context).scale(14) > 18;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 76,
@@ -24,7 +33,7 @@ class FurUNotificationPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 12, 6, 12),
           child: IconButton.filledTonal(
             tooltip: 'Back',
-            onPressed: () => Navigator.maybePop(context),
+            onPressed: onBack ?? () => Navigator.maybePop(context),
             style: IconButton.styleFrom(
               backgroundColor: dark
                   ? const Color(0xFF473125)
@@ -36,10 +45,32 @@ class FurUNotificationPage extends StatelessWidget {
         ),
         title: Text(
           'Notifications',
-          style: Theme.of(context).textTheme.headlineMedium
-              ?.copyWith(fontSize: 26),
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontSize: headerAction != null && !stackedAction ? 22 : 26,
+          ),
         ),
+        actions: headerAction == null || stackedAction
+            ? null
+            : [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: headerAction!,
+                ),
+              ],
+        bottom: headerAction != null && stackedAction
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(56),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 16, bottom: 8),
+                    child: headerAction!,
+                  ),
+                ),
+              )
+            : null,
       ),
+      bottomNavigationBar: bottomBar,
       body: SafeArea(
         top: false,
         child: PageBody(

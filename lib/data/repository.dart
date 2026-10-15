@@ -48,6 +48,7 @@ abstract interface class RemoteSubmissionRepository {
 
 abstract interface class NotificationRepository {
   Future<List<Map<String, dynamic>>> fetchNotifications();
+  Future<void> updateNotifications(List<String> ids, {required bool delete});
 }
 
 class LocalFurURepository implements FurURepository {

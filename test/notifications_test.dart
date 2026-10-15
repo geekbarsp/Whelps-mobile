@@ -18,6 +18,11 @@ class _NotificationSource extends LocalFurURepository
   _NotificationSource(super.preferences);
   Completer<List<Map<String, dynamic>>> response = Completer();
   @override
+  Future<void> updateNotifications(
+    List<String> ids, {
+    required bool delete,
+  }) async {}
+  @override
   Future<List<Map<String, dynamic>>> fetchNotifications() => response.future;
 }
 
@@ -58,6 +63,35 @@ void main() {
     expect(items.single['applicationId'], 'a1');
     expect(items.single['isRead'], false);
   });
+
+  test(
+    'Notification actions send selected IDs and propagate failures',
+    () async {
+      var fail = false;
+      final repository = WhelpsApiRepository(
+        baseUrl: 'https://whelps.test',
+        preferences: await SharedPreferences.getInstance(),
+        client: MockClient((request) async {
+          expect(request.method, 'PATCH');
+          expect(request.url.path, '/api/notifications');
+          expect(request.headers['Authorization'], 'Bearer test-token');
+          final body = jsonDecode(request.body) as Map;
+          expect(body['ids'], ['n1', 'n2']);
+          expect(body['action'], fail ? 'delete' : 'mark_read');
+          return http.Response(
+            fail ? '{"error":"Unavailable"}' : '{"ok":true}',
+            fail ? 503 : 200,
+          );
+        }),
+      );
+      await repository.updateNotifications(['n1', 'n2'], delete: false);
+      fail = true;
+      await expectLater(
+        repository.updateNotifications(['n1', 'n2'], delete: true),
+        throwsStateError,
+      );
+    },
+  );
 
   test('Failed notification requests do not become empty inboxes', () async {
     final repository = WhelpsApiRepository(

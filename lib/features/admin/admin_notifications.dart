@@ -85,6 +85,40 @@ class _NotificationsScreenState extends State<_NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    if (_items.isNotEmpty) {
+      return FurUNotificationInbox(
+        items: _items,
+        refreshError: _failed,
+        onRefresh: _load,
+        onOpen: _open,
+        onAction: (ids, delete) async {
+          final repository = AppScope.of(context).repository;
+          if (repository is! NotificationRepository) {
+            throw StateError('Notification actions are unavailable.');
+          }
+          await (repository as NotificationRepository).updateNotifications(
+            ids,
+            delete: delete,
+          );
+          if (!mounted) return;
+          setState(() {
+            if (delete) {
+              _items = _items
+                  .where((item) => !ids.contains('${item['id']}'))
+                  .toList();
+            } else {
+              _items = _items
+                  .map(
+                    (item) => ids.contains('${item['id']}')
+                        ? {...item, 'isRead': true}
+                        : item,
+                  )
+                  .toList();
+            }
+          });
+        },
+      );
+    }
     return RefreshIndicator(
       onRefresh: _load,
       child: FurUNotificationPage(
@@ -130,70 +164,8 @@ class _NotificationsScreenState extends State<_NotificationsScreen> {
               )
             : _items.isEmpty
             ? null
-            : ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-                children: [
-                  if (_failed)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        'Couldn’t refresh. Pull down to try again.',
-                        style: TextStyle(color: colors.error),
-                      ),
-                    ),
-                  for (final item in _items)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Material(
-                        color: colors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(24),
-                        clipBehavior: Clip.antiAlias,
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          leading: CircleAvatar(
-                            backgroundColor: colors.primaryContainer,
-                            foregroundColor: colors.onPrimaryContainer,
-                            child: const Icon(Icons.notifications_none_rounded),
-                          ),
-                          title: Text(
-                            '${item['message'] ?? item['body'] ?? 'New update'}',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          subtitle: _date(item['createdAt']) == null
-                              ? null
-                              : Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(_date(item['createdAt'])!),
-                                ),
-                          trailing:
-                              item['isRead'] == true || item['isRead'] == 1
-                              ? null
-                              : Semantics(
-                                  label: 'Unread',
-                                  child: Icon(
-                                    Icons.circle,
-                                    size: 9,
-                                    color: colors.primary,
-                                  ),
-                                ),
-                          onTap: () => _open(item),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+            : null,
       ),
     );
-  }
-
-  String? _date(Object? value) {
-    final date = DateTime.tryParse('$value')?.toLocal();
-    return date == null
-        ? null
-        : MaterialLocalizations.of(context).formatMediumDate(date);
   }
 }

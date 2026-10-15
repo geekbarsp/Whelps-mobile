@@ -9,6 +9,7 @@ import '../../widgets/components.dart';
 import '../../core/backend_config.dart';
 import '../../data/repository.dart';
 import '../../widgets/notification_page.dart';
+import '../../widgets/notification_inbox.dart';
 
 part 'admin_dashboard.dart';
 part 'admin_pets.dart';

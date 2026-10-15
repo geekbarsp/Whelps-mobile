@@ -74,6 +74,19 @@ class WhelpsApiRepository
     return _list(result['notifications']);
   }
 
+  @override
+  Future<void> updateNotifications(
+    List<String> ids, {
+    required bool delete,
+  }) async {
+    await _request(
+      '/api/notifications',
+      method: 'PATCH',
+      authenticated: true,
+      body: {'ids': ids, 'action': delete ? 'delete' : 'mark_read'},
+    );
+  }
+
   Future<Map<String, String>> _headers({bool authenticated = false}) async {
     final headers = <String, String>{
       'Accept': 'application/json',
