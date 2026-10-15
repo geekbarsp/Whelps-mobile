@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import 'pets.dart';
 
-/// Replace this boundary with authenticated Supabase queries and private storage.
+/// Data boundary shared by the WHELPS API client and deterministic local tests.
 abstract class FurURepository {
   Future<List<Pet>> fetchPets();
   Future<List<Map<String, dynamic>>> loadAllAccounts();
@@ -17,7 +17,7 @@ abstract class FurURepository {
   Future<void> savePetAvailability(String petId, PetAvailability availability);
 }
 
-/// Implemented only by the production Supabase data source. Authentication is
+/// Implemented only by the production WHELPS API source. Authentication is
 /// deliberately separate from profile persistence so a profile row can never
 /// grant itself administrator authority.
 abstract interface class RemoteAuthRepository {

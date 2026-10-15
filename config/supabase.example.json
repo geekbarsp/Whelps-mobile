@@ -1,5 +1,0 @@
-{
-  "SUPABASE_URL": "https://YOUR_PROJECT_REF.supabase.co",
-  "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_YOUR_PUBLIC_KEY",
-  "PASSWORD_RESET_REDIRECT": "http://localhost:8080/"
-}

@@ -3,7 +3,7 @@
 - Flutter 3.47.5; Dart 3.13.4; Windows host.
 - `flutter pub get`: completed; dependencies locked in pubspec.lock.
 - `flutter analyze`: no issues.
-- `flutter test`: 24 passing controller/widget tests.
+- `flutter test`: 45 passing controller/widget tests.
 - `flutter build web --release`: successful, including the Wasm compatibility dry run.
 - Responsive widget checks: 320, 360, 390, 412, 768 logical pixels; navigation, rescue resources, discovery empty state and filter sheet.
 - Large-text check: 1.6× at 320 pixels; form action remains above a 300-pixel keyboard inset.
@@ -14,4 +14,4 @@
 
 ## Limits
 
-Native Android/iOS builds and physical-device picker/permission behavior were not tested. Android SDK is missing, and the host is Windows. iOS requires macOS/Xcode/signing. The FurU Supabase migration has not been deployed to a connected FurU project, so email delivery, remote authentication, reviewer decisions, live messaging, monitoring persistence, and durable private uploads still require backend setup. The supplied mobile and administrator references were used for visual and workflow alignment.
+Native Android/iOS builds and physical-device picker/permission behavior were not tested. Android SDK is missing, and the host is Windows. iOS requires macOS/Xcode/signing. The WHELPS server patch must be deployed before mobile Bearer sessions and browser CORS work against the live site. Online rehoming intake, private attachment upload, account deletion, and password recovery still require website endpoints.

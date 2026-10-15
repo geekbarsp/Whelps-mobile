@@ -50,3 +50,4 @@ app.*.map.json
 # Local Supabase client configuration. Keep the example file only.
 /config/supabase.json
 /config/whelps.json
+/supabase/.temp/

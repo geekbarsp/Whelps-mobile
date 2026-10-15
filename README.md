@@ -24,7 +24,7 @@ The installed **Mobile Preview - Phone & Tablet Simulator** (`lirobi.phone-previ
 
 ## Features
 
-- Welcome, sign-in/sign-up, verified password-reset delivery with Supabase, and a local development fallback.
+- Welcome, online sign-in/sign-up, secure session restoration, and server-managed administrator access.
 - Home, searchable discovery, species/breed/age/sex/size/location filters, favorites, and photo-led pet details.
 - Six-step adoption and rehoming flows with validation, debounced draft saving, resume, image/document selection, final review, and agreement.
 - Activity history, status badges, next-step explanations, and cancellation. Human review is represented without automatic approval or publication.
@@ -43,9 +43,9 @@ The installed **Mobile Preview - Phone & Tablet Simulator** (`lirobi.phone-previ
 
 The mobile client does not connect directly to PostgreSQL and does not contain a Supabase service-role key. It stores the WHELPS mobile session token in platform secure storage. Favorites, display settings, and unfinished drafts remain on-device; published pets, profiles, submitted adoption applications, reviews, conversations, and monitoring records use the website database.
 
-There is no seeded or hardcoded administrator. Public registration always creates an adopter. A rehome submission promotes that account to individual rehomer, and verified organizations receive their server-managed role. The first administrator must be assigned by a project owner using the protected SQL process in [Supabase setup](supabase/README.md).
+There is no seeded or hardcoded administrator in the mobile client. Public registration creates standard WHELPS users, while administrator identity and authorization remain controlled by the website server environment.
 
-With Supabase configured, submission attachments upload to controlled Storage buckets. Local development keeps only filenames and requires reselection after restart.
+The current website API accepts adoption applications but does not yet expose online rehoming intake, attachment upload, account deletion, or password-recovery endpoints. The app reports those limits directly instead of pretending the action succeeded.
 
 ## Source limitations
 
