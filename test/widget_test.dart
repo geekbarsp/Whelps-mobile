@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:furu/core/app_controller.dart';
@@ -178,7 +179,78 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Applications').last);
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Applications'), findsOneWidget);
+    expect(
+      find.text('Review and manage adoption applications.'),
+      findsOneWidget,
+    );
+    for (final width in [320.0, 360.0, 390.0, 412.0, 768.0]) {
+      tester.view.physicalSize = Size(width, 850);
+      await tester.pumpAndSettle();
+      expect(
+        tester.takeException(),
+        isNull,
+        reason: 'Admin applications at $width',
+      );
+    }
+    tester.view.physicalSize = const Size(320, 700);
+    tester.platformDispatcher.textScaleFactorTestValue = 1.7;
+    app.themePreference = AppThemePreference.dark;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
+    app.themePreference = AppThemePreference.defaultTheme;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    String? copiedLink;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copiedLink = (call.arguments as Map)['text'] as String;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await tester.tap(find.text('New Application'));
+    await tester.pumpAndSettle();
+    expect(find.text('Copy Whelps website link'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Copy Whelps website link'));
+    });
+    await tester.pumpAndSettle();
+    expect(copiedLink, startsWith('https://'));
+    expect(find.text('Start a new application'), findsNothing);
+    await tester.ensureVisible(find.byTooltip('Filter applications'));
+    await tester.tap(find.byTooltip('Filter applications'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sort by'), findsOneWidget);
+    await tester.tap(find.text('Apply filters'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byType(TextField).first,
+      'unmatched-application',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('No matching applications'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, 'Angel');
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Angel Garcia'),
+      150,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Angel Garcia'));
+    await tester.pumpAndSettle();
+    expect(find.text('Adoption screening'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Monitoring').last);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Monitoring'), findsOneWidget);

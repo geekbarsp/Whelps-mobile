@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/app_controller.dart';
 import '../../core/theme.dart';
@@ -9,6 +10,7 @@ import '../../core/backend_config.dart';
 
 part 'admin_dashboard.dart';
 part 'admin_pets.dart';
+part 'admin_applications.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -30,7 +32,7 @@ class _AdminShellState extends State<AdminShell> {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return Scaffold(
-      appBar: tab <= 1
+      appBar: tab <= 2
           ? null
           : AppBar(
               title: Column(
@@ -61,7 +63,7 @@ class _AdminShellState extends State<AdminShell> {
               ],
             ),
       body: SafeArea(
-        top: tab <= 1,
+        top: tab <= 2,
         child: IndexedStack(
           index: tab,
           children: [
@@ -99,111 +101,6 @@ class _LoadingCards extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _ApplicationsTab extends StatefulWidget {
-  const _ApplicationsTab();
-  @override
-  State<_ApplicationsTab> createState() => _ApplicationsTabState();
-}
-
-class _ApplicationsTabState extends State<_ApplicationsTab> {
-  String search = '';
-  String filter = 'all';
-
-  @override
-  Widget build(BuildContext context) {
-    final all = _rows(AppScope.of(context), 'applications');
-    final rows = all.where((row) {
-      final status = '${row['status'] ?? 'submitted'}';
-      final haystack =
-          '${row['id']} ${row['applicant_name']} '
-                  '${row['applicant_email']} ${row['pet_name']} $status'
-              .toLowerCase();
-      return haystack.contains(search.toLowerCase()) &&
-          (filter == 'all' || status == filter);
-    }).toList();
-    int count(Iterable<String> statuses) =>
-        all.where((row) => statuses.contains('${row['status']}')).length;
-    return _RefreshPage(
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 32),
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: _MiniStat(
-                  label: 'Submitted',
-                  value: count(['submitted', 'under_review']),
-                  color: FurUColors.orange,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _MiniStat(
-                  label: 'Approved',
-                  value: count(['approved', 'handover', 'completed']),
-                  color: const Color(0xFF2D9855),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _MiniStat(
-                  label: 'Rejected',
-                  value: count(['rejected']),
-                  color: const Color(0xFFD64C46),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          TextField(
-            onChanged: (value) => setState(() => search = value),
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search_rounded),
-              hintText: 'Applicant, pet, or application ID',
-            ),
-          ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final value in [
-                  'all',
-                  'submitted',
-                  'under_review',
-                  'approved',
-                  'rejected',
-                ])
-                  Padding(
-                    padding: const EdgeInsets.only(right: 7),
-                    child: ChoiceChip(
-                      label: Text(_pretty(value)),
-                      selected: filter == value,
-                      onSelected: (_) => setState(() => filter = value),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (rows.isEmpty)
-            const EmptyState(
-              icon: Icons.assignment_outlined,
-              title: 'No matching applications',
-              message: 'Try another status or search term.',
-            )
-          else
-            for (final row in rows) ...[
-              _ApprovalCard(kind: 1, row: row),
-              const SizedBox(height: 10),
-            ],
-        ],
-      ),
-    );
-  }
 }
 
 class _MiniStat extends StatelessWidget {
