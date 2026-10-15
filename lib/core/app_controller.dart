@@ -21,6 +21,7 @@ class AppController extends ChangeNotifier {
   List<AdminReviewCase> reviewCases = [];
   Map<String, dynamic> adminWorkspace = const {};
   bool adminLoading = false;
+  String? adminError;
   Set<String> favorites = {};
   bool notificationsEnabled = true;
   AppThemePreference themePreference = AppThemePreference.defaultTheme;
@@ -460,14 +461,24 @@ class AppController extends ChangeNotifier {
   Future<void> refreshAdminData() async {
     _requireAdmin();
     adminLoading = true;
+    adminError = null;
     notifyListeners();
     if (repository case AdminRepository admin) {
       try {
         adminWorkspace = await admin.fetchAdminWorkspace();
+        final warnings = (adminWorkspace['sync_warnings'] as List? ?? const [])
+            .map((value) => '$value')
+            .toList();
+        if (warnings.isNotEmpty) {
+          adminError =
+              'Some sections could not refresh: ${warnings.join(', ')}. Pull down to retry.';
+        }
         managedUsers = (adminWorkspace['users'] as List? ?? const [])
             .map((raw) => UserProfile.fromJson(_profileJsonFromAdminRow(raw)))
             .toList();
         reviewCases = _remoteReviewCases(adminWorkspace);
+      } catch (error) {
+        adminError = error.toString().replaceFirst('Bad state: ', '');
       } finally {
         adminLoading = false;
         notifyListeners();

@@ -88,25 +88,22 @@ class WhelpsApiRepository
     String method = 'GET',
     bool authenticated = false,
     Map<String, dynamic>? body,
+    Duration timeout = _requestTimeout,
   }) async {
     late http.Response response;
     final uri = Uri.parse('$baseUrl$path');
     final headers = await _headers(authenticated: authenticated);
     try {
       response = switch (method) {
-        'POST' => await _client.post(
-          uri,
-          headers: headers,
-          body: jsonEncode(body ?? const {}),
-        ).timeout(_requestTimeout),
-        'PATCH' => await _client.patch(
-          uri,
-          headers: headers,
-          body: jsonEncode(body ?? const {}),
-        ).timeout(_requestTimeout),
-        _ => await _client
-            .get(uri, headers: headers)
-            .timeout(_requestTimeout),
+        'POST' =>
+          await _client
+              .post(uri, headers: headers, body: jsonEncode(body ?? const {}))
+              .timeout(timeout),
+        'PATCH' =>
+          await _client
+              .patch(uri, headers: headers, body: jsonEncode(body ?? const {}))
+              .timeout(timeout),
+        _ => await _client.get(uri, headers: headers).timeout(timeout),
       };
     } on Exception {
       throw StateError(
@@ -189,7 +186,9 @@ class WhelpsApiRepository
   }
 
   int _ageMonths(String value) {
-    final amount = int.tryParse(RegExp(r'\d+').firstMatch(value)?.group(0) ?? '');
+    final amount = int.tryParse(
+      RegExp(r'\d+').firstMatch(value)?.group(0) ?? '',
+    );
     if (amount == null) return 0;
     return value.toLowerCase().contains('month') ? amount : amount * 12;
   }
@@ -271,12 +270,18 @@ class WhelpsApiRepository
       'Phone number': '${row['contact'] ?? ''}',
       'Location': '${row['address'] ?? ''}',
       'Home type': '${row['housingType'] ?? row['housing_type'] ?? ''}',
-      'Pets allowed by housing': '${row['petsAllowed'] ?? row['pets_allowed'] ?? ''}',
-      'Safe space for the pet': '${row['housingDetails'] ?? row['housing_details'] ?? ''}',
-      'Monthly household income range': '${row['incomeRange'] ?? row['income_range'] ?? ''}',
-      'Veterinary and financial care plan': '${row['financialSupport'] ?? row['financial_support'] ?? ''}',
-      'Pet experience': '${row['petExperience'] ?? row['pet_experience'] ?? ''}',
-      'Daily care and time alone': '${row['experienceDetails'] ?? row['experience_details'] ?? ''}',
+      'Pets allowed by housing':
+          '${row['petsAllowed'] ?? row['pets_allowed'] ?? ''}',
+      'Safe space for the pet':
+          '${row['housingDetails'] ?? row['housing_details'] ?? ''}',
+      'Monthly household income range':
+          '${row['incomeRange'] ?? row['income_range'] ?? ''}',
+      'Veterinary and financial care plan':
+          '${row['financialSupport'] ?? row['financial_support'] ?? ''}',
+      'Pet experience':
+          '${row['petExperience'] ?? row['pet_experience'] ?? ''}',
+      'Daily care and time alone':
+          '${row['experienceDetails'] ?? row['experience_details'] ?? ''}',
       'Reason for adoption': '${row['reason'] ?? ''}',
     },
     status: _applicationStatus('${row['status'] ?? ''}'),
@@ -511,26 +516,67 @@ class WhelpsApiRepository
 
   @override
   Future<Map<String, dynamic>> fetchAdminWorkspace() async {
-    final results = await Future.wait([
-      _request('/api/admin/applications', authenticated: true),
-      _request('/api/admin/pets', authenticated: true),
-      _request('/api/monitoring', authenticated: true),
-      _request('/api/conversations?filter=all', authenticated: true),
-      _request('/api/admin/evaluation', authenticated: true),
-    ]);
-    _adminApplications = _list(results[0]['applications']);
-    _adminPets = _list(results[1]['pets']);
-    final monitoring = results[2];
-    final evaluation = _map(results[4]['metrics']);
-    final statistics = _map(results[0]['statistics']);
+    const adminTimeout = Duration(seconds: 8);
+    final warnings = <String>[];
+    final requests = <String, Future<Map<String, dynamic>> Function()>{
+      'applications': () => _request(
+        '/api/admin/applications',
+        authenticated: true,
+        timeout: adminTimeout,
+      ),
+      'pets': () => _request(
+        '/api/admin/pets',
+        authenticated: true,
+        timeout: adminTimeout,
+      ),
+      'monitoring': () => _request(
+        '/api/monitoring',
+        authenticated: true,
+        timeout: adminTimeout,
+      ),
+      'conversations': () => _request(
+        '/api/conversations?filter=all',
+        authenticated: true,
+        timeout: adminTimeout,
+      ),
+      'evaluation': () => _request(
+        '/api/admin/evaluation',
+        authenticated: true,
+        timeout: adminTimeout,
+      ),
+    };
+    final resultEntries = await Future.wait(
+      requests.entries.map((entry) async {
+        try {
+          return MapEntry(entry.key, await entry.value());
+        } catch (error) {
+          warnings.add(entry.key);
+          return MapEntry(entry.key, <String, dynamic>{});
+        }
+      }),
+    );
+    final results = Map<String, Map<String, dynamic>>.fromEntries(
+      resultEntries,
+    );
+    final applicationsResponse = results['applications'] ?? const {};
+    final petsResponse = results['pets'] ?? const {};
+    _adminApplications = _list(applicationsResponse['applications']);
+    _adminPets = _list(petsResponse['pets']);
+    final monitoring = results['monitoring'] ?? const {};
+    final evaluation = _map(results['evaluation']?['metrics']);
+    final statistics = _map(applicationsResponse['statistics']);
     final applications = _adminApplications.map(_adminApplication).toList();
     final pets = _adminPets.map(_adminPet).toList();
     final placements = _list(monitoring['placements']);
-        final records = _list(monitoring['records']);
+    final records = _list(monitoring['records']);
     return {
       'stats': {
         'adopters': statistics['users'] ?? 0,
-        'available_pets': statistics['availablePets'] ?? 0,
+        'available_pets':
+            statistics['availablePets'] ??
+            _adminPets
+                .where((pet) => '${pet['availability']}' == 'Available')
+                .length,
         'applications': statistics['total'] ?? applications.length,
         'completed_adoptions': statistics['completed'] ?? 0,
         'unread_messages': statistics['unreadMessages'] ?? 0,
@@ -538,26 +584,34 @@ class WhelpsApiRepository
       },
       'applications': applications,
       'pets': pets,
-      'adoption_records': placements.map((row) => {
-        'id': row['id'],
-        'pet_name': row['petName'],
-        'adopter_name': row['adopterName'],
-        'status': '${row['status']}'.toLowerCase(),
-      }).toList(),
-      'monitoring_updates': records.map((row) => {
-        'id': row['id'],
-        'pet_name': row['petName'],
-        'adopter_name': row['adopterName'],
-        'pet_condition': row['petCondition'],
-        'feeding': row['feedingUpdate'],
-        'health': row['healthObservations'],
-        'behavior': row['behaviorUpdate'],
-        'created_at': row['submittedAt'],
-        'status': '${row['reviewStatus']}' == 'Pending Review'
-            ? 'pending_review'
-            : '${row['reviewStatus']}'.toLowerCase().replaceAll(' ', '_'),
-      }).toList(),
-      'conversations': _list(results[3]['conversations']),
+      'adoption_records': placements
+          .map(
+            (row) => {
+              'id': row['id'],
+              'pet_name': row['petName'],
+              'adopter_name': row['adopterName'],
+              'status': '${row['status']}'.toLowerCase(),
+            },
+          )
+          .toList(),
+      'monitoring_updates': records
+          .map(
+            (row) => {
+              'id': row['id'],
+              'pet_name': row['petName'],
+              'adopter_name': row['adopterName'],
+              'pet_condition': row['petCondition'],
+              'feeding': row['feedingUpdate'],
+              'health': row['healthObservations'],
+              'behavior': row['behaviorUpdate'],
+              'created_at': row['submittedAt'],
+              'status': '${row['reviewStatus']}' == 'Pending Review'
+                  ? 'pending_review'
+                  : '${row['reviewStatus']}'.toLowerCase().replaceAll(' ', '_'),
+            },
+          )
+          .toList(),
+      'conversations': _list(results['conversations']?['conversations']),
       'users': const [],
       'verifications': const [],
       'analytics': {
@@ -569,6 +623,7 @@ class WhelpsApiRepository
             .toList(),
       },
       'evaluation': evaluation,
+      'sync_warnings': warnings,
     };
   }
 
@@ -622,7 +677,9 @@ class WhelpsApiRepository
   ) async {
     if (action == 'review_application') {
       final id = '${payload['application_id']}';
-      final row = _adminApplications.firstWhere((item) => '${item['id']}' == id);
+      final row = _adminApplications.firstWhere(
+        (item) => '${item['id']}' == id,
+      );
       final status = '${payload['status']}';
       final apiAction = switch (status) {
         'more_information' => 'requestInfo',
@@ -696,9 +753,7 @@ class WhelpsApiRepository
               pet['vaccinationStatus'] ?? pet['vaccination_status'],
           'healthNotes': pet['healthNotes'] ?? pet['health_notes'],
           'description': pet['description'],
-          'healthVerification': verified
-              ? 'Verified'
-              : 'Pending Verification',
+          'healthVerification': verified ? 'Verified' : 'Pending Verification',
           'availability': requested == 'adopted' ? 'Adopted' : 'Available',
           'published': verified,
         },
@@ -708,9 +763,8 @@ class WhelpsApiRepository
     throw StateError('This administrator action is not available in WHELPS.');
   }
 
-  static Map<String, dynamic> _map(Object? value) => value is Map
-      ? Map<String, dynamic>.from(value)
-      : <String, dynamic>{};
+  static Map<String, dynamic> _map(Object? value) =>
+      value is Map ? Map<String, dynamic>.from(value) : <String, dynamic>{};
 
   static List<Map<String, dynamic>> _list(Object? value) => value is List
       ? value.whereType<Map>().map(Map<String, dynamic>.from).toList()

@@ -126,7 +126,7 @@ class _AdminHome extends StatelessWidget {
         const Color(0xFF4E8CBF),
       ),
       (
-        '${stats['active_pets'] ?? 0}',
+        '${stats['available_pets'] ?? 0}',
         'Available pets',
         Icons.pets_rounded,
         const Color(0xFF4FA36D),
@@ -163,6 +163,10 @@ class _AdminHome extends StatelessWidget {
             'Operational overview for animal care and adoption.',
             style: Theme.of(context).textTheme.bodyLarge,
           ),
+          if (app.adminError != null) ...[
+            const SizedBox(height: 14),
+            _AdminSyncNotice(message: app.adminError!),
+          ],
           const SizedBox(height: 18),
           if (app.adminLoading && stats.isEmpty)
             const _LoadingCards()
@@ -1105,18 +1109,19 @@ Future<void> _showDecision(
                   child: DropdownButtonFormField<String>(
                     initialValue: assessments[criterion.key],
                     decoration: InputDecoration(labelText: criterion.value),
-                    items: const [
-                      'Suitable',
-                      'Needs Clarification',
-                      'Concern Identified',
-                    ]
-                        .map(
-                          (value) => DropdownMenuItem(
-                            value: value,
-                            child: Text(value),
-                          ),
-                        )
-                        .toList(),
+                    items:
+                        const [
+                              'Suitable',
+                              'Needs Clarification',
+                              'Concern Identified',
+                            ]
+                            .map(
+                              (value) => DropdownMenuItem(
+                                value: value,
+                                child: Text(value),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (value) => assessments[criterion.key] = value!,
                   ),
                 ),
@@ -2913,6 +2918,41 @@ class _SectionTitle extends StatelessWidget {
       ),
       Text(trailing, style: Theme.of(context).textTheme.bodySmall),
     ],
+  );
+}
+
+class _AdminSyncNotice extends StatelessWidget {
+  final String message;
+  const _AdminSyncNotice({required this.message});
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    liveRegion: true,
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.cloud_sync_outlined,
+            color: Theme.of(context).colorScheme.onTertiaryContainer,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onTertiaryContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
   );
 }
 
