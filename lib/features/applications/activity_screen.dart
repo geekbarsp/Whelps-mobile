@@ -4,6 +4,7 @@ import '../../core/app_controller.dart';
 import '../../core/theme.dart';
 import '../../models/models.dart';
 import '../../widgets/components.dart';
+import '../../widgets/notification_page.dart';
 import 'workflow_screen.dart';
 
 class NotificationsScreen extends StatelessWidget {
@@ -12,76 +13,67 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     final items = app.submissions;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
-      body: PageBody(
-        child: items.isEmpty
-            ? const Center(
-                child: EmptyState(
-                  icon: Icons.notifications_none_rounded,
-                  title: 'All quiet for now',
-                  message: 'Draft reminders and application updates will appear here.',
-                ),
-              )
-            : ListView(
-                padding: const EdgeInsets.all(22),
-                children: [
-                  if (!app.notificationsEnabled)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 16),
-                      child: FurUSectionCard(
-                        color: FurUColors.peach,
-                        child: Text(
-                          'Notifications are paused. You can turn them back on in Settings.',
-                        ),
+    return FurUNotificationPage(
+      child: items.isEmpty
+          ? null
+          : ListView(
+              padding: const EdgeInsets.all(22),
+              children: [
+                if (!app.notificationsEnabled)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: FurUSectionCard(
+                      color: FurUColors.peach,
+                      child: Text(
+                        'Notifications are paused. You can turn them back on in Settings.',
                       ),
                     ),
-                  Text(
-                    'Your latest updates',
-                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  const SizedBox(height: 8),
-                  const Text('Everything important, in one gentle place.'),
-                  const SizedBox(height: 22),
-                  for (final item in items)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Material(
-                        color: FurUColors.card(context),
-                        borderRadius: BorderRadius.circular(20),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-                          leading: CircleAvatar(
-                            backgroundColor:
-                                item.status == ApplicationStatus.draft
-                                ? FurUColors.peach
-                                : FurUColors.sage,
-                            child: Icon(
+                Text(
+                  'Your latest updates',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                const Text('Everything important, in one gentle place.'),
+                const SizedBox(height: 22),
+                for (final item in items)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Material(
+                      color: FurUColors.card(context),
+                      borderRadius: BorderRadius.circular(20),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
+                        leading: CircleAvatar(
+                          backgroundColor:
                               item.status == ApplicationStatus.draft
-                                  ? Icons.edit_note_rounded
-                                  : Icons.notifications_active_outlined,
-                              color: FurUColors.forest,
-                            ),
-                          ),
-                          title: Text(
+                              ? FurUColors.peach
+                              : FurUColors.sage,
+                          child: Icon(
                             item.status == ApplicationStatus.draft
-                                ? 'Your draft is waiting'
-                                : '${item.status.label}: ${item.title}',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
+                                ? Icons.edit_note_rounded
+                                : Icons.notifications_active_outlined,
+                            color: FurUColors.forest,
                           ),
-                          subtitle: Text(
-                            item.status == ApplicationStatus.draft
-                                ? 'Continue when you’re ready.'
-                                : 'Open this update to review the details.',
-                          ),
-                          trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () => openWorkflow(context, item),
                         ),
+                        title: Text(
+                          item.status == ApplicationStatus.draft
+                              ? 'Your draft is waiting'
+                              : '${item.status.label}: ${item.title}',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        subtitle: Text(
+                          item.status == ApplicationStatus.draft
+                              ? 'Continue when you’re ready.'
+                              : 'Open this update to review the details.',
+                        ),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => openWorkflow(context, item),
                       ),
                     ),
-                ],
-              ),
-      ),
+                  ),
+              ],
+            ),
     );
   }
 }

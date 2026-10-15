@@ -46,6 +46,10 @@ abstract interface class RemoteSubmissionRepository {
   Future<void> persistSubmission(Submission submission);
 }
 
+abstract interface class NotificationRepository {
+  Future<List<Map<String, dynamic>>> fetchNotifications();
+}
+
 class LocalFurURepository implements FurURepository {
   final SharedPreferences preferences;
   LocalFurURepository(this.preferences);

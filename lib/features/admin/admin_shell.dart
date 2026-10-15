@@ -7,12 +7,15 @@ import '../../core/app_controller.dart';
 import '../../core/theme.dart';
 import '../../widgets/components.dart';
 import '../../core/backend_config.dart';
+import '../../data/repository.dart';
+import '../../widgets/notification_page.dart';
 
 part 'admin_dashboard.dart';
 part 'admin_pets.dart';
 part 'admin_applications.dart';
 part 'admin_monitoring.dart';
 part 'admin_more.dart';
+part 'admin_notifications.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -1728,97 +1731,6 @@ String _monthName(int month) => const [
   'Dec',
 ][month - 1];
 
-class _NotificationsScreen extends StatelessWidget {
-  const _NotificationsScreen();
-  @override
-  Widget build(BuildContext context) {
-    final rows = _rows(AppScope.of(context), 'notifications');
-    return _SimplePage(
-      title: 'Notifications',
-      action: IconButton(
-        onPressed: () => _announcement(context),
-        tooltip: 'New announcement',
-        icon: const Icon(Icons.add_rounded),
-      ),
-      child: ListView(
-        children: [
-          FilledButton.icon(
-            onPressed: () => _announcement(context),
-            icon: const Icon(Icons.campaign_rounded),
-            label: const Text('Send announcement'),
-          ),
-          const SizedBox(height: 16),
-          if (rows.isEmpty)
-            const EmptyState(
-              icon: Icons.notifications_none_rounded,
-              title: 'No notification history',
-              message: 'Announcements and decision notices will appear here.',
-            )
-          else
-            for (final row in rows.take(100))
-              _DataCard(
-                title: '${row['title']}',
-                status: _date(row['created_at']),
-                lines: ['${row['body']}'],
-              ),
-        ],
-      ),
-    );
-  }
-}
-
-Future<void> _announcement(BuildContext context) async {
-  final title = TextEditingController();
-  final body = TextEditingController();
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('New announcement'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: title,
-            decoration: const InputDecoration(labelText: 'Title'),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: body,
-            maxLines: 4,
-            decoration: const InputDecoration(labelText: 'Message'),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            if (title.text.trim().isNotEmpty && body.text.trim().isNotEmpty) {
-              Navigator.pop(context, true);
-            }
-          },
-          child: const Text('Send'),
-        ),
-      ],
-    ),
-  );
-  if (ok == true && context.mounted) {
-    try {
-      await AppScope.of(context).runAdminAction('send_announcement', {
-        'title': title.text.trim(),
-        'body': body.text.trim(),
-      });
-    } catch (error) {
-      if (context.mounted) showError(context, error);
-    }
-  }
-  title.dispose();
-  body.dispose();
-}
-
 class _AuditScreen extends StatelessWidget {
   const _AuditScreen();
   @override
@@ -1998,14 +1910,10 @@ class _AdminProfileScreen extends StatelessWidget {
 class _SimplePage extends StatelessWidget {
   final String title;
   final Widget child;
-  final Widget? action;
-  const _SimplePage({required this.title, required this.child, this.action});
+  const _SimplePage({required this.title, required this.child});
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Text(title),
-      actions: action == null ? null : [action!],
-    ),
+    appBar: AppBar(title: Text(title)),
     body: PageBody(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),

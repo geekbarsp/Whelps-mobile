@@ -18,6 +18,7 @@ class WhelpsApiRepository
         FurURepository,
         RemoteAuthRepository,
         RemoteSubmissionRepository,
+        NotificationRepository,
         AdminRepository {
   WhelpsApiRepository({
     required String baseUrl,
@@ -66,6 +67,12 @@ class WhelpsApiRepository
 
   @override
   Stream<void> get passwordRecoveryEvents => const Stream<void>.empty();
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchNotifications() async {
+    final result = await _request('/api/notifications', authenticated: true);
+    return _list(result['notifications']);
+  }
 
   Future<Map<String, String>> _headers({bool authenticated = false}) async {
     final headers = <String, String>{
