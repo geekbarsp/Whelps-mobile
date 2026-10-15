@@ -100,13 +100,14 @@ void main() {
     expect(find.text('FurU × Whelps administration'), findsOneWidget);
     await tester.tap(find.text('Pets').last);
     await tester.pumpAndSettle();
-    expect(find.text('Pet & health records'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Pets & health'), findsOneWidget);
+    expect(find.text('Pet name, breed, or status'), findsOneWidget);
     await tester.tap(find.text('Applications').last);
     await tester.pumpAndSettle();
-    expect(find.text('Adoption applications'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Applications'), findsOneWidget);
     await tester.tap(find.text('Monitoring').last);
     await tester.pumpAndSettle();
-    expect(find.text('Monitoring & adopted pets'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Monitoring'), findsOneWidget);
     await tester.tap(find.text('More'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('System evaluation'));

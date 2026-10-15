@@ -154,20 +154,10 @@ class _AdminHome extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 32),
         children: [
-          Text(
-            'Whelps administration',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 5),
-          Text(
-            'Operational overview for animal care and adoption.',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
           if (app.adminError != null) ...[
-            const SizedBox(height: 14),
             _AdminSyncNotice(message: app.adminError!),
+            const SizedBox(height: 14),
           ],
-          const SizedBox(height: 18),
           if (app.adminLoading && stats.isEmpty)
             const _LoadingCards()
           else
@@ -346,16 +336,6 @@ class _PetHealthTabState extends State<_PetHealthTab> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 32),
         children: [
-          Text(
-            'Pet & health records',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Verify health information before publishing a pet profile.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
           TextField(
             onChanged: (value) => setState(() => search = value),
             decoration: const InputDecoration(
@@ -500,16 +480,6 @@ class _ApplicationsTabState extends State<_ApplicationsTab> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 32),
         children: [
-          Text(
-            'Adoption applications',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Review prospective adopters and record each screening decision.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
@@ -648,16 +618,6 @@ class _MonitoringTabState extends State<_MonitoringTab> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(18, 10, 18, 32),
         children: [
-          Text(
-            'Monitoring & adopted pets',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Review post-adoption updates and finalize completed monitoring.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 16),
           TextField(
             onChanged: (value) => setState(() => search = value),
             decoration: const InputDecoration(
