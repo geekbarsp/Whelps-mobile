@@ -8,6 +8,7 @@ import '../../widgets/components.dart';
 import '../../core/backend_config.dart';
 
 part 'admin_dashboard.dart';
+part 'admin_pets.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -29,7 +30,7 @@ class _AdminShellState extends State<AdminShell> {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return Scaffold(
-      appBar: tab == 0
+      appBar: tab <= 1
           ? null
           : AppBar(
               title: Column(
@@ -60,7 +61,7 @@ class _AdminShellState extends State<AdminShell> {
               ],
             ),
       body: SafeArea(
-        top: tab == 0,
+        top: tab <= 1,
         child: IndexedStack(
           index: tab,
           children: [
@@ -98,144 +99,6 @@ class _LoadingCards extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _PetHealthTab extends StatefulWidget {
-  const _PetHealthTab();
-  @override
-  State<_PetHealthTab> createState() => _PetHealthTabState();
-}
-
-class _PetHealthTabState extends State<_PetHealthTab> {
-  String search = '';
-  String filter = 'all';
-
-  @override
-  Widget build(BuildContext context) {
-    final rows = _rows(AppScope.of(context), 'pets').where((row) {
-      final status = '${row['listing_status'] ?? 'pending'}';
-      final haystack = '${row['name']} ${row['breed']} $status'.toLowerCase();
-      return haystack.contains(search.toLowerCase()) &&
-          (filter == 'all' || status == filter);
-    }).toList();
-    return _RefreshPage(
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 32),
-        children: [
-          TextField(
-            onChanged: (value) => setState(() => search = value),
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search_rounded),
-              hintText: 'Pet name, breed, or status',
-            ),
-          ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final value in [
-                  'all',
-                  'pending',
-                  'active',
-                  'corrections_requested',
-                  'adopted',
-                ])
-                  Padding(
-                    padding: const EdgeInsets.only(right: 7),
-                    child: ChoiceChip(
-                      label: Text(_pretty(value)),
-                      selected: filter == value,
-                      onSelected: (_) => setState(() => filter = value),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (rows.isEmpty)
-            const EmptyState(
-              icon: Icons.pets_outlined,
-              title: 'No pet records in this view',
-              message: 'New submissions and published pets will appear here.',
-            )
-          else
-            for (final row in rows) ...[
-              _PetHealthCard(row: row),
-              const SizedBox(height: 10),
-            ],
-        ],
-      ),
-    );
-  }
-}
-
-class _PetHealthCard extends StatelessWidget {
-  final Map<String, dynamic> row;
-  const _PetHealthCard({required this.row});
-
-  @override
-  Widget build(BuildContext context) {
-    final health = row['health'];
-    final healthText = health is List && health.isNotEmpty
-        ? health.join(' • ')
-        : 'Health information awaiting verification';
-    return Material(
-      color: FurUColors.card(context),
-      borderRadius: BorderRadius.circular(20),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _open(context, _ApprovalDetail(kind: 0, row: row)),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(17),
-                ),
-                child: const Icon(Icons.pets_rounded, size: 29),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${row['name'] ?? 'Pet'}',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ),
-                        FurUStatusBadge(
-                          _pretty('${row['listing_status'] ?? 'pending'}'),
-                        ),
-                      ],
-                    ),
-                    Text('${row['breed'] ?? row['species'] ?? 'Animal'}'),
-                    const SizedBox(height: 4),
-                    Text(
-                      healthText,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class _ApplicationsTab extends StatefulWidget {

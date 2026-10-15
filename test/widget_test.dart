@@ -117,8 +117,65 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Pets').last);
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Pets & health'), findsOneWidget);
-    expect(find.text('Pet name, breed, or status'), findsOneWidget);
+    expect(find.text('Pets & Health'), findsOneWidget);
+    expect(find.text('Search pet name, breed, or status...'), findsOneWidget);
+    for (final width in [320.0, 360.0, 390.0, 412.0, 768.0]) {
+      tester.view.physicalSize = Size(width, 850);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'Admin pets at $width');
+    }
+    tester.view.physicalSize = const Size(320, 700);
+    tester.platformDispatcher.textScaleFactorTestValue = 1.7;
+    app.themePreference = AppThemePreference.dark;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
+    app.themePreference = AppThemePreference.defaultTheme;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Filter pets'));
+    await tester.pumpAndSettle();
+    expect(find.text('Apply filters'), findsOneWidget);
+    await tester.tap(find.text('Apply filters'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'unmatched-pet');
+    await tester.pumpAndSettle();
+    expect(find.text('No pet records in this view'), findsOneWidget);
+    await tester.enterText(find.byType(TextField).first, '');
+    await tester.tap(find.text('Add Pet'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Continue'),
+      250,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter Pet name.'), findsOneWidget);
+    for (final entry in {
+      'name': 'Mochi',
+      'breed': 'Mixed breed',
+      'age': '2 years',
+      'image': 'https://example.com/mochi.jpg',
+      'description': 'A gentle companion',
+    }.entries) {
+      await tester.ensureVisible(find.byKey(ValueKey(entry.key)));
+      await tester.enterText(find.byKey(ValueKey(entry.key)), entry.value);
+      await tester.pumpAndSettle();
+    }
+    await tester.ensureVisible(find.text('Continue'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('2. Health & review'), findsOneWidget);
+    await tester.ensureVisible(find.text('Back to pet details'));
+    await tester.tap(find.text('Back to pet details'));
+    await tester.pumpAndSettle();
+    expect(find.text('Mochi'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Applications').last);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Applications'), findsOneWidget);

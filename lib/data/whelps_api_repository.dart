@@ -691,6 +691,31 @@ class WhelpsApiRepository
     String action,
     Map<String, dynamic> payload,
   ) async {
+    if (action == 'create_pet') {
+      await _request(
+        '/api/admin/pets',
+        method: 'POST',
+        authenticated: true,
+        body: {
+          for (final key in [
+            'name',
+            'type',
+            'breed',
+            'age',
+            'gender',
+            'image',
+            'fixedStatus',
+            'vaccinationStatus',
+            'healthNotes',
+            'description',
+          ])
+            key: payload[key],
+          'healthVerification': 'Pending Verification',
+          'published': false,
+        },
+      );
+      return;
+    }
     if (action == 'review_application') {
       final id = '${payload['application_id']}';
       final row = _adminApplications.firstWhere(
