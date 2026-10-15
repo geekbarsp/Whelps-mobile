@@ -78,7 +78,12 @@ class _AuthScreenState extends State<AuthScreen> {
           action(),
           if (!reduced)
             Future<void>.delayed(const Duration(milliseconds: 1000)),
-        ]);
+        ]).timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => throw StateError(
+            'WHELPS took too long to respond. Check the API deployment and try again.',
+          ),
+        );
       } else {
         await action();
       }

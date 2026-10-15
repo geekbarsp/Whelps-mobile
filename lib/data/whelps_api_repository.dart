@@ -34,6 +34,7 @@ class WhelpsApiRepository
   static const _tokenKey = 'whelps.session.token';
   static const _emailKey = 'whelps.session.email';
   static const _localKey = 'whelps.mobile.preferences';
+  static const _requestTimeout = Duration(seconds: 15);
   Map<String, dynamic>? _currentUser;
   List<Map<String, dynamic>> _adminPets = const [];
   List<Map<String, dynamic>> _adminApplications = const [];
@@ -72,13 +73,15 @@ class WhelpsApiRepository
           uri,
           headers: headers,
           body: jsonEncode(body ?? const {}),
-        ),
+        ).timeout(_requestTimeout),
         'PATCH' => await _client.patch(
           uri,
           headers: headers,
           body: jsonEncode(body ?? const {}),
-        ),
-        _ => await _client.get(uri, headers: headers),
+        ).timeout(_requestTimeout),
+        _ => await _client
+            .get(uri, headers: headers)
+            .timeout(_requestTimeout),
       };
     } on Exception {
       throw StateError(
