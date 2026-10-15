@@ -51,7 +51,8 @@ void main() {
     app.adminWorkspace = {
       'stats': {
         'adopters': 12,
-        'active_pets': 4,
+        'available_pets': 4,
+        'applications': 1,
         'pending_applications': 7,
         'completed_adoptions': 4,
         'unread_messages': 2,
@@ -97,7 +98,23 @@ void main() {
     await tester.pumpWidget(FurUApp(controller: app));
     await tester.pumpAndSettle();
     expect(find.byType(AdminShell), findsOneWidget);
-    expect(find.text('FurU × Whelps administration'), findsOneWidget);
+    expect(find.text('Administration Panel'), findsOneWidget);
+    expect(find.text('Welcome back,'), findsOneWidget);
+    for (final width in [320.0, 360.0, 390.0, 412.0, 768.0]) {
+      tester.view.physicalSize = Size(width, 850);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    tester.view.physicalSize = const Size(320, 700);
+    app.themePreference = AppThemePreference.dark;
+    app.notifyListeners();
+    tester.platformDispatcher.textScaleFactorTestValue = 1.7;
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
+    app.themePreference = AppThemePreference.defaultTheme;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Pets').last);
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Pets & health'), findsOneWidget);

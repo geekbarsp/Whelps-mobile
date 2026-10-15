@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import '../../core/app_controller.dart';
 import '../../core/theme.dart';
 import '../../widgets/components.dart';
+import '../../core/backend_config.dart';
+
+part 'admin_dashboard.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -26,36 +29,38 @@ class _AdminShellState extends State<AdminShell> {
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(titles[tab]),
-            Text(
-              'FurU × Whelps administration',
-              style: Theme.of(context).textTheme.bodySmall,
+      appBar: tab == 0
+          ? null
+          : AppBar(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(titles[tab]),
+                  Text(
+                    'FurU × Whelps administration',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+              actions: [
+                IconButton(
+                  tooltip: 'Refresh',
+                  onPressed: app.adminLoading ? null : app.refreshAdminData,
+                  icon: app.adminLoading
+                      ? const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.refresh_rounded),
+                ),
+                const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Center(child: FurUStatusBadge('Admin')),
+                ),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: app.adminLoading ? null : app.refreshAdminData,
-            icon: app.adminLoading
-                ? const SizedBox.square(
-                    dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.refresh_rounded),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: Center(child: FurUStatusBadge('Admin')),
-          ),
-        ],
-      ),
       body: SafeArea(
-        top: false,
+        top: tab == 0,
         child: IndexedStack(
           index: tab,
           children: [
@@ -67,190 +72,45 @@ class _AdminShellState extends State<AdminShell> {
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: tab,
-        onDestinationSelected: (value) => setState(() => tab = value),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.space_dashboard_outlined),
-            selectedIcon: Icon(Icons.space_dashboard_rounded),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.pets_outlined),
-            selectedIcon: Icon(Icons.pets_rounded),
-            label: 'Pets',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.assignment_outlined),
-            selectedIcon: Icon(Icons.assignment_rounded),
-            label: 'Applications',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.monitor_heart_outlined),
-            selectedIcon: Icon(Icons.monitor_heart_rounded),
-            label: 'Monitoring',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.more_horiz_rounded),
-            label: 'More',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AdminHome extends StatelessWidget {
-  final ValueChanged<int> onOpenTab;
-  const _AdminHome({required this.onOpenTab});
-
-  @override
-  Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    final stats = _map(app.adminWorkspace['stats']);
-    final applications = _rows(app, 'applications');
-    final pendingHealth = _rows(
-      app,
-      'pets',
-    ).where((row) => '${row['listing_status']}' == 'pending').length;
-    final pendingMonitoring = _rows(
-      app,
-      'monitoring_updates',
-    ).where((row) => '${row['status']}' == 'pending_review').length;
-    final metrics = <(String, String, IconData, Color)>[
-      (
-        '${stats['adopters'] ?? 0}',
-        'Adopter accounts',
-        Icons.people_rounded,
-        const Color(0xFF4E8CBF),
-      ),
-      (
-        '${stats['available_pets'] ?? 0}',
-        'Available pets',
-        Icons.pets_rounded,
-        const Color(0xFF4FA36D),
-      ),
-      (
-        '${applications.length}',
-        'Applications',
-        Icons.assignment_rounded,
-        FurUColors.orange,
-      ),
-      (
-        '${stats['completed_adoptions'] ?? 0}',
-        'Completed adoptions',
-        Icons.volunteer_activism_rounded,
-        const Color(0xFFD36B72),
-      ),
-      (
-        '${stats['unread_messages'] ?? 0}',
-        'Unread messages',
-        Icons.chat_bubble_rounded,
-        const Color(0xFF8A6AC7),
-      ),
-    ];
-    return _RefreshPage(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(18, 12, 18, 32),
-        children: [
-          if (app.adminError != null) ...[
-            _AdminSyncNotice(message: app.adminError!),
-            const SizedBox(height: 14),
-          ],
-          if (app.adminLoading && stats.isEmpty)
-            const _LoadingCards()
-          else
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final width = (constraints.maxWidth - 10) / 2;
-                return Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    for (final metric in metrics)
-                      _Metric(width: width, data: metric),
-                  ],
-                );
-              },
+      bottomNavigationBar: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+        child: NavigationBar(
+          backgroundColor: FurUColors.card(context),
+          indicatorColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF684028)
+              : const Color(0xFFFFE4CE),
+          selectedIndex: tab,
+          onDestinationSelected: (value) => setState(() => tab = value),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Dashboard',
             ),
-          const SizedBox(height: 24),
-          _SectionTitle('Recent applications', '${applications.length} total'),
-          const SizedBox(height: 10),
-          if (applications.isEmpty)
-            const EmptyState(
-              icon: Icons.assignment_outlined,
-              title: 'No applications yet',
-              message: 'Submitted adoption applications will appear here.',
-            )
-          else
-            for (final row in applications.take(3)) ...[
-              _ApprovalCard(kind: 1, row: row),
-              const SizedBox(height: 9),
-            ],
-          const SizedBox(height: 24),
-          _SectionTitle('Needs attention', 'Tap to review'),
-          const SizedBox(height: 10),
-          _AttentionTile(
-            label: 'Submitted applications',
-            count: applications
-                .where((row) => '${row['status']}' == 'submitted')
-                .length,
-            icon: Icons.assignment_late_outlined,
-            onTap: () => onOpenTab(2),
-          ),
-          _AttentionTile(
-            label: 'Under review',
-            count: applications
-                .where((row) => '${row['status']}' == 'under_review')
-                .length,
-            icon: Icons.manage_search_rounded,
-            onTap: () => onOpenTab(2),
-          ),
-          _AttentionTile(
-            label: 'Health verifications',
-            count: pendingHealth,
-            icon: Icons.health_and_safety_outlined,
-            onTap: () => onOpenTab(1),
-          ),
-          _AttentionTile(
-            label: 'Monitoring updates',
-            count: pendingMonitoring,
-            icon: Icons.monitor_heart_outlined,
-            onTap: () => onOpenTab(3),
-          ),
-        ],
+            NavigationDestination(
+              icon: Icon(Icons.pets_outlined),
+              selectedIcon: Icon(Icons.pets_rounded),
+              label: 'Pets',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.assignment_outlined),
+              selectedIcon: Icon(Icons.assignment_rounded),
+              label: 'Applications',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.bar_chart_outlined),
+              selectedIcon: Icon(Icons.bar_chart_rounded),
+              label: 'Monitoring',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.more_horiz_rounded),
+              label: 'More',
+            ),
+          ],
+        ),
       ),
     );
   }
-}
-
-class _Metric extends StatelessWidget {
-  final double width;
-  final (String, String, IconData, Color) data;
-  const _Metric({required this.width, required this.data});
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: width,
-    child: FurUSectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            backgroundColor: data.$4.withValues(alpha: .16),
-            child: Icon(data.$3, color: data.$4),
-          ),
-          const SizedBox(height: 13),
-          Text(data.$1, style: Theme.of(context).textTheme.headlineMedium),
-          Text(
-            data.$2,
-            maxLines: 1,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 class _LoadingCards extends StatelessWidget {
@@ -268,46 +128,6 @@ class _LoadingCards extends StatelessWidget {
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(20),
         ),
-      ),
-    ),
-  );
-}
-
-class _AttentionTile extends StatelessWidget {
-  final String label;
-  final int count;
-  final IconData icon;
-  final VoidCallback onTap;
-  const _AttentionTile({
-    required this.label,
-    required this.count,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 9),
-    child: Material(
-      color: FurUColors.card(context),
-      borderRadius: BorderRadius.circular(18),
-      child: ListTile(
-        minTileHeight: 68,
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          child: Icon(icon),
-        ),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
-        trailing: Badge(
-          backgroundColor: count == 0
-              ? Theme.of(context).colorScheme.surfaceContainerHighest
-              : FurUColors.orange,
-          textColor: count == 0
-              ? Theme.of(context).colorScheme.onSurface
-              : Colors.white,
-          label: Text('$count'),
-        ),
-        onTap: onTap,
       ),
     ),
   );
