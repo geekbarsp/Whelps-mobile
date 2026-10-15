@@ -12,6 +12,7 @@ part 'admin_dashboard.dart';
 part 'admin_pets.dart';
 part 'admin_applications.dart';
 part 'admin_monitoring.dart';
+part 'admin_more.dart';
 
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
@@ -21,50 +22,10 @@ class AdminShell extends StatefulWidget {
 
 class _AdminShellState extends State<AdminShell> {
   int tab = 0;
-  static const titles = [
-    'Dashboard',
-    'Pets & health',
-    'Applications',
-    'Monitoring',
-    'More',
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final app = AppScope.of(context);
     return Scaffold(
-      appBar: tab <= 3
-          ? null
-          : AppBar(
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(titles[tab]),
-                  Text(
-                    'FurU × Whelps administration',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              actions: [
-                IconButton(
-                  tooltip: 'Refresh',
-                  onPressed: app.adminLoading ? null : app.refreshAdminData,
-                  icon: app.adminLoading
-                      ? const SizedBox.square(
-                          dimension: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh_rounded),
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(right: 12),
-                  child: Center(child: FurUStatusBadge('Admin')),
-                ),
-              ],
-            ),
       body: SafeArea(
-        top: tab <= 3,
         child: IndexedStack(
           index: tab,
           children: [
@@ -900,123 +861,6 @@ Future<void> _resolveReport(
     }
   }
   note.dispose();
-}
-
-class _MoreTab extends StatelessWidget {
-  const _MoreTab();
-  @override
-  Widget build(BuildContext context) => _RefreshPage(
-    child: ListView(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 32),
-      children: [
-        Text(
-          'Administration tools',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 5),
-        Text(
-          'Messages, evaluation, account management, and system controls.',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 14),
-        _MoreTile(
-          Icons.forum_outlined,
-          'Messages',
-          'Approved adopters and monitoring conversations',
-          () => _open(context, const _MessagesScreen()),
-        ),
-        _MoreTile(
-          Icons.insights_rounded,
-          'System evaluation',
-          'Feedback, outcomes, and activity trends',
-          () => _open(context, const _AnalyticsScreen()),
-        ),
-        _MoreTile(
-          Icons.people_outline_rounded,
-          'User management',
-          'Search, suspend, or restore accounts',
-          () => _open(
-            context,
-            const _ModulePage(title: 'User management', child: _UsersTab()),
-          ),
-        ),
-        _MoreTile(
-          Icons.shield_outlined,
-          'Reports & moderation',
-          'Investigate safety and welfare reports',
-          () => _open(
-            context,
-            const _ModulePage(
-              title: 'Reports & moderation',
-              child: _ReportsTab(),
-            ),
-          ),
-        ),
-        _MoreTile(
-          Icons.verified_user_outlined,
-          'Organization verification',
-          'Review rescue and shelter credentials',
-          () => _open(context, const _OrganizationScreen()),
-        ),
-        _MoreTile(
-          Icons.handshake_outlined,
-          'Adoption records',
-          'Handover and completion history',
-          () => _open(context, const _RecordsScreen()),
-        ),
-        _MoreTile(
-          Icons.campaign_outlined,
-          'Notifications',
-          'Announcements and delivery history',
-          () => _open(context, const _NotificationsScreen()),
-        ),
-        _MoreTile(
-          Icons.history_rounded,
-          'Audit logs',
-          'Append-only administrator actions',
-          () => _open(context, const _AuditScreen()),
-        ),
-        _MoreTile(
-          Icons.settings_outlined,
-          'Settings',
-          'Theme, notifications, access, and storage',
-          () => _open(context, const _AdminSettingsScreen()),
-        ),
-        _MoreTile(
-          Icons.admin_panel_settings_outlined,
-          'Administrator profile',
-          'Authorized Whelps administrator account',
-          () => _open(context, const _AdminProfileScreen()),
-        ),
-      ],
-    ),
-  );
-}
-
-class _MoreTile extends StatelessWidget {
-  final IconData icon;
-  final String title, subtitle;
-  final VoidCallback onTap;
-  const _MoreTile(this.icon, this.title, this.subtitle, this.onTap);
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: Material(
-      color: FurUColors.card(context),
-      borderRadius: BorderRadius.circular(19),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-          child: Icon(icon),
-        ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right_rounded),
-        onTap: onTap,
-      ),
-    ),
-  );
 }
 
 class _RecordsScreen extends StatelessWidget {

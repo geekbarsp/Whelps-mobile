@@ -275,7 +275,7 @@ class _DashboardHeader extends StatelessWidget {
               child: Text('Administrator profile'),
             ),
             PopupMenuItem(value: 'settings', child: Text('Settings')),
-            PopupMenuItem(value: 'refresh', child: Text('Refresh dashboard')),
+            PopupMenuItem(value: 'refresh', child: Text('Refresh workspace')),
           ],
           child: Container(
             constraints: const BoxConstraints(minHeight: 48),

@@ -340,6 +340,44 @@ void main() {
     expect(find.text('Max'), findsNothing);
     await tester.tap(find.text('More'));
     await tester.pumpAndSettle();
+    expect(find.text('Tools & Settings'), findsOneWidget);
+    expect(find.textContaining('2 unread'), findsOneWidget);
+    for (final width in [320.0, 360.0, 390.0, 412.0, 768.0]) {
+      tester.view.physicalSize = Size(width, 850);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: 'Admin More at $width');
+    }
+    tester.view.physicalSize = const Size(320, 700);
+    tester.platformDispatcher.textScaleFactorTestValue = 1.7;
+    app.themePreference = AppThemePreference.dark;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('System settings'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(tester.takeException(), isNull);
+    tester.platformDispatcher.clearTextScaleFactorTestValue();
+    app.themePreference = AppThemePreference.defaultTheme;
+    app.notifyListeners();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('System settings'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppBar), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Messages'),
+      -250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Messages'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(AppBar, 'Messages'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('System evaluation'));
     await tester.tap(find.text('System evaluation'));
     await tester.pumpAndSettle();
     expect(find.text('Platform outcomes'), findsOneWidget);
