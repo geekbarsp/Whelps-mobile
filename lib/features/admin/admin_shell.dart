@@ -72,42 +72,9 @@ class _AdminShellState extends State<AdminShell> {
           ],
         ),
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
-        child: NavigationBar(
-          backgroundColor: FurUColors.card(context),
-          indicatorColor: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF684028)
-              : const Color(0xFFFFE4CE),
-          selectedIndex: tab,
-          onDestinationSelected: (value) => setState(() => tab = value),
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Dashboard',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.pets_outlined),
-              selectedIcon: Icon(Icons.pets_rounded),
-              label: 'Pets',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.assignment_outlined),
-              selectedIcon: Icon(Icons.assignment_rounded),
-              label: 'Applications',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.bar_chart_outlined),
-              selectedIcon: Icon(Icons.bar_chart_rounded),
-              label: 'Monitoring',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.more_horiz_rounded),
-              label: 'More',
-            ),
-          ],
-        ),
+      bottomNavigationBar: _AdminBottomNavigation(
+        selectedIndex: tab,
+        onSelected: (value) => setState(() => tab = value),
       ),
     );
   }
