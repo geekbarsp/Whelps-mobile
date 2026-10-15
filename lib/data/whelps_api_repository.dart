@@ -518,46 +518,62 @@ class WhelpsApiRepository
   Future<Map<String, dynamic>> fetchAdminWorkspace() async {
     const adminTimeout = Duration(seconds: 8);
     final warnings = <String>[];
-    final requests = <String, Future<Map<String, dynamic>> Function()>{
-      'applications': () => _request(
-        '/api/admin/applications',
+    late Map<String, Map<String, dynamic>> results;
+    try {
+      final workspace = await _request(
+        '/api/admin/workspace',
         authenticated: true,
-        timeout: adminTimeout,
-      ),
-      'pets': () => _request(
-        '/api/admin/pets',
-        authenticated: true,
-        timeout: adminTimeout,
-      ),
-      'monitoring': () => _request(
-        '/api/monitoring',
-        authenticated: true,
-        timeout: adminTimeout,
-      ),
-      'conversations': () => _request(
-        '/api/conversations?filter=all',
-        authenticated: true,
-        timeout: adminTimeout,
-      ),
-      'evaluation': () => _request(
-        '/api/admin/evaluation',
-        authenticated: true,
-        timeout: adminTimeout,
-      ),
-    };
-    final resultEntries = await Future.wait(
-      requests.entries.map((entry) async {
-        try {
-          return MapEntry(entry.key, await entry.value());
-        } catch (error) {
-          warnings.add(entry.key);
-          return MapEntry(entry.key, <String, dynamic>{});
-        }
-      }),
-    );
-    final results = Map<String, Map<String, dynamic>>.fromEntries(
-      resultEntries,
-    );
+      );
+      results = {
+        'applications': {
+          'applications': workspace['applications'],
+          'statistics': workspace['statistics'],
+        },
+        'pets': {'pets': workspace['pets']},
+        'monitoring': _map(workspace['monitoring']),
+        'conversations': {'conversations': workspace['conversations']},
+        'evaluation': {'metrics': workspace['evaluation']},
+      };
+    } catch (_) {
+      final requests = <String, Future<Map<String, dynamic>> Function()>{
+        'applications': () => _request(
+          '/api/admin/applications',
+          authenticated: true,
+          timeout: adminTimeout,
+        ),
+        'pets': () => _request(
+          '/api/admin/pets',
+          authenticated: true,
+          timeout: adminTimeout,
+        ),
+        'monitoring': () => _request(
+          '/api/monitoring',
+          authenticated: true,
+          timeout: adminTimeout,
+        ),
+        'conversations': () => _request(
+          '/api/conversations?filter=all',
+          authenticated: true,
+          timeout: adminTimeout,
+        ),
+        'evaluation': () => _request(
+          '/api/admin/evaluation',
+          authenticated: true,
+          timeout: adminTimeout,
+        ),
+      };
+      final resultEntries = await Future.wait(
+        requests.entries.map((entry) async {
+          try {
+            return MapEntry(entry.key, await entry.value());
+          } catch (_) {
+            warnings.add(entry.key);
+            return MapEntry(entry.key, <String, dynamic>{});
+          }
+        }),
+      );
+      results = Map<String, Map<String, dynamic>>.fromEntries(resultEntries);
+    }
     final applicationsResponse = results['applications'] ?? const {};
     final petsResponse = results['pets'] ?? const {};
     _adminApplications = _list(applicationsResponse['applications']);
