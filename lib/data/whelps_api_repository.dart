@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,6 +40,30 @@ class WhelpsApiRepository
   List<Map<String, dynamic>> _adminPets = const [];
   List<Map<String, dynamic>> _adminApplications = const [];
 
+  Future<String?> _readSessionValue(String key) async => kIsWeb
+      ? preferences.getString(key)
+      : _secureStorage.read(key: key).timeout(const Duration(seconds: 5));
+
+  Future<void> _writeSessionValue(String key, String value) async {
+    if (kIsWeb) {
+      if (!await preferences.setString(key, value)) {
+        throw StateError('The browser could not save your WHELPS session.');
+      }
+      return;
+    }
+    await _secureStorage
+        .write(key: key, value: value)
+        .timeout(const Duration(seconds: 5));
+  }
+
+  Future<void> _deleteSessionValue(String key) async {
+    if (kIsWeb) {
+      await preferences.remove(key);
+      return;
+    }
+    await _secureStorage.delete(key: key).timeout(const Duration(seconds: 5));
+  }
+
   @override
   Stream<void> get passwordRecoveryEvents => const Stream<void>.empty();
 
@@ -49,7 +74,7 @@ class WhelpsApiRepository
       'X-Whelps-Client': 'mobile',
     };
     if (authenticated) {
-      final token = await _secureStorage.read(key: _tokenKey);
+      final token = await _readSessionValue(_tokenKey);
       if (token == null || token.isEmpty) {
         throw StateError('Your session has expired. Sign in again.');
       }
@@ -115,17 +140,14 @@ class WhelpsApiRepository
       throw StateError('WHELPS did not return a valid mobile session.');
     }
     _currentUser = user;
-    await _secureStorage.write(key: _tokenKey, value: token);
-    await _secureStorage.write(
-      key: _emailKey,
-      value: user['email']?.toString(),
-    );
+    await _writeSessionValue(_tokenKey, token);
+    await _writeSessionValue(_emailKey, user['email']?.toString() ?? '');
   }
 
   Future<void> _clearSession() async {
     _currentUser = null;
-    await _secureStorage.delete(key: _tokenKey);
-    await _secureStorage.delete(key: _emailKey);
+    await _deleteSessionValue(_tokenKey);
+    await _deleteSessionValue(_emailKey);
   }
 
   @override
@@ -280,7 +302,7 @@ class WhelpsApiRepository
 
   @override
   Future<Map<String, dynamic>?> restoreRemoteAccount() async {
-    final token = await _secureStorage.read(key: _tokenKey);
+    final token = await _readSessionValue(_tokenKey);
     if (token == null) return null;
     try {
       final data = await _request('/api/auth/me', authenticated: true);
@@ -370,7 +392,7 @@ class WhelpsApiRepository
   }
 
   @override
-  Future<String?> loadSession() => _secureStorage.read(key: _emailKey);
+  Future<String?> loadSession() => _readSessionValue(_emailKey);
 
   @override
   Future<void> saveSession(String? email) async {
