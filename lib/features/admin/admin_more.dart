@@ -97,18 +97,24 @@ class _MoreTab extends StatelessWidget {
               Icons.notifications_none_rounded,
               'Notifications',
               'Announcements and delivery history',
+              const Color(0xFFDA9650),
+              7,
               const _NotificationsScreen(),
             ),
             (
               Icons.history_rounded,
               'Audit logs',
               'Administrator action history',
+              const Color(0xFF568BC4),
+              8,
               const _AuditScreen(),
             ),
             (
               Icons.admin_panel_settings_outlined,
               'Administrator profile',
               'Your account and sign-out options',
+              const Color(0xFF9270C6),
+              9,
               const _AdminProfileScreen(),
             ),
           ]) ...[
@@ -116,8 +122,9 @@ class _MoreTab extends StatelessWidget {
               icon: item.$1,
               title: item.$2,
               subtitle: item.$3,
-              color: const Color(0xFF9C7257),
-              onTap: () => _open(context, item.$4),
+              color: item.$4,
+              artwork: item.$5,
+              onTap: () => _open(context, item.$6),
             ),
             const SizedBox(height: 8),
           ],
@@ -528,6 +535,72 @@ class _AdminToolArt extends StatelessWidget {
             child: Icon(
               Icons.check_circle_rounded,
               size: 24,
+              color: color.withValues(alpha: .8),
+            ),
+          ),
+        ],
+        7 => [
+          Positioned(right: 1, top: 4, child: _paper(48, 43)),
+          Positioned(
+            left: 1,
+            bottom: 0,
+            child: Icon(
+              Icons.notifications_active_rounded,
+              size: 43,
+              color: color.withValues(alpha: .65),
+            ),
+          ),
+          Positioned(
+            right: 3,
+            top: 1,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: .8),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ],
+        8 => [
+          Positioned(left: 7, top: 1, child: _paper(45, 51)),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Icon(
+              Icons.history_rounded,
+              size: 33,
+              color: color.withValues(alpha: .8),
+            ),
+          ),
+          Positioned(
+            left: 1,
+            top: 4,
+            child: Icon(
+              Icons.fact_check_rounded,
+              size: 22,
+              color: color.withValues(alpha: .55),
+            ),
+          ),
+        ],
+        9 => [
+          Positioned(right: 0, top: 5, child: _paper(65, 44)),
+          Positioned(
+            left: 4,
+            top: 7,
+            child: Icon(
+              Icons.account_circle_rounded,
+              size: 37,
+              color: color.withValues(alpha: .6),
+            ),
+          ),
+          Positioned(
+            right: 1,
+            bottom: 0,
+            child: Icon(
+              Icons.verified_user_rounded,
+              size: 25,
               color: color.withValues(alpha: .8),
             ),
           ),
