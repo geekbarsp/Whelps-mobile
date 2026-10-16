@@ -73,7 +73,7 @@ class _FurUAppState extends State<FurUApp> {
     child: ListenableBuilder(
       listenable: controller,
       builder: (context, _) => MaterialApp(
-        title: 'FurYou · A forever home',
+        title: 'FurU x Whelps',
         debugShowCheckedModeBanner: false,
         theme:
             controller.themePreference == AppThemePreference.light ||
