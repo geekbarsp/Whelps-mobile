@@ -33,8 +33,6 @@ class ProfileScreen extends StatelessWidget {
         key: const PageStorageKey('profile-scroll'),
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 30),
         children: [
-          const _ProfileReferenceHeader(),
-          const SizedBox(height: 8),
           _ProfileIdentityCard(user: user),
           const SizedBox(height: 12),
           _ProfileActionTile(
@@ -133,23 +131,6 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class _ProfileReferenceHeader extends StatelessWidget {
-  const _ProfileReferenceHeader();
-
-  @override
-  Widget build(BuildContext context) => const _NativeProfileHeader();
-}
-
-class _NativeProfileHeader extends StatelessWidget {
-  const _NativeProfileHeader();
-
-  @override
-  Widget build(BuildContext context) => const SizedBox(
-    height: 62,
-    child: Align(alignment: Alignment.centerLeft, child: Brand(small: true)),
-  );
 }
 
 class _ProfileIdentityCard extends StatelessWidget {
