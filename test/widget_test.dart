@@ -510,6 +510,15 @@ void main() {
     await tester.tap(find.text('Discover').last);
     await tester.pumpAndSettle();
 
+    final header = tester.getRect(
+      find.byKey(const ValueKey('discover-reference-header')),
+    );
+    final searchField = tester.getRect(
+      find.byKey(const ValueKey('discover-search-field')),
+    );
+    expect(header.height, closeTo(header.width * 330 / 780, .5));
+    expect(searchField.top, greaterThanOrEqualTo(header.bottom));
+
     final before = tester.getTopLeft(find.text('Milo').last).dy;
     await tester.drag(find.byType(Scrollable).first, const Offset(0, -500));
     await tester.pumpAndSettle();

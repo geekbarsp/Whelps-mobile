@@ -147,6 +147,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             children: [
               Expanded(
                 child: TextField(
+                  key: const ValueKey('discover-search-field'),
                   controller: search,
                   onChanged: (_) => setState(() {}),
                   style: const TextStyle(fontSize: 15),
@@ -276,8 +277,11 @@ class _DiscoverHeader extends StatelessWidget {
   Widget build(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark
       ? _DarkDiscoverHeader(onNearMe: onNearMe)
-      : SizedBox(
-          height: 153,
+      : AspectRatio(
+          key: const ValueKey('discover-reference-header'),
+          // The source mockup includes its own search field below the hero.
+          // Stop the crop just before that field at every phone width.
+          aspectRatio: 780 / 330,
           child: Stack(
             children: [
               Positioned.fill(
