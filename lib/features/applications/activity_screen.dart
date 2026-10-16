@@ -2,78 +2,202 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_controller.dart';
 import '../../core/theme.dart';
+import '../../data/repository.dart';
 import '../../models/models.dart';
 import '../../widgets/components.dart';
+import '../../widgets/notification_inbox.dart';
 import '../../widgets/notification_page.dart';
 import 'workflow_screen.dart';
 
-class NotificationsScreen extends StatelessWidget {
+class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
+
+  @override
+  State<NotificationsScreen> createState() => _NotificationsScreenState();
+}
+
+class _NotificationsScreenState extends State<NotificationsScreen> {
+  bool _started = false;
+  bool _loading = true;
+  bool _failed = false;
+  List<Map<String, dynamic>> _items = [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    _load();
+  }
+
+  List<Map<String, dynamic>> _localItems(AppController app) => app.submissions
+      .map(
+        (submission) => {
+          'id': 'submission-${submission.id}',
+          'submissionId': submission.id,
+          'type': submission.kind == SubmissionKind.adoption
+              ? 'ADOPTION_APPLICATION'
+              : 'REHOME_APPLICATION',
+          'message': submission.status == ApplicationStatus.draft
+              ? 'Your draft is waiting'
+              : '${submission.status.label}: ${submission.title}',
+          'createdAt': submission.updatedAt.toIso8601String(),
+          'isRead': submission.status == ApplicationStatus.draft,
+        },
+      )
+      .toList();
+
+  Future<void> _load() async {
+    final app = AppScope.of(context);
+    setState(() {
+      _loading = true;
+      _failed = false;
+    });
+    try {
+      final repository = app.repository;
+      final items = repository is NotificationRepository
+          ? await (repository as NotificationRepository).fetchNotifications()
+          : _localItems(app);
+      if (!mounted) return;
+      setState(() {
+        _items = items;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _failed = true;
+      });
+    }
+  }
+
+  void _open(Map<String, dynamic> item) {
+    final app = AppScope.of(context);
+    final submissionId = item['submissionId'] ?? item['applicationId'];
+    final matches = app.submissions.where(
+      (submission) => submission.id == '$submissionId',
+    );
+    if (matches.isNotEmpty) {
+      openWorkflow(context, matches.first);
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 6, 24, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Notification details',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 12),
+              Text('${item['message'] ?? item['body'] ?? 'New update'}'),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Done'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _update(List<String> ids, bool delete) async {
+    final repository = AppScope.of(context).repository;
+    if (repository is NotificationRepository) {
+      await (repository as NotificationRepository).updateNotifications(
+        ids,
+        delete: delete,
+      );
+    }
+    if (!mounted) return;
+    setState(() {
+      if (delete) {
+        _items = _items
+            .where((item) => !ids.contains('${item['id']}'))
+            .toList();
+      } else {
+        _items = _items
+            .map(
+              (item) => ids.contains('${item['id']}')
+                  ? {...item, 'isRead': true}
+                  : item,
+            )
+            .toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final app = AppScope.of(context);
-    final items = app.submissions;
-    return FurUNotificationPage(
-      child: items.isEmpty
-          ? null
-          : ListView(
-              padding: const EdgeInsets.all(22),
-              children: [
-                if (!app.notificationsEnabled)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16),
-                    child: FurUSectionCard(
-                      color: FurUColors.peach,
-                      child: Text(
-                        'Notifications are paused. You can turn them back on in Settings.',
-                      ),
-                    ),
-                  ),
-                Text(
-                  'Your latest updates',
-                  style: Theme.of(context).textTheme.headlineMedium,
+    final colors = Theme.of(context).colorScheme;
+    if (_items.isNotEmpty) {
+      return FurUNotificationInbox(
+        items: _items,
+        refreshError: _failed,
+        onRefresh: _load,
+        onOpen: _open,
+        onAction: _update,
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: FurUNotificationPage(
+        emptyMessage:
+            'Application updates, messages, and reminders will appear here.',
+        child: _loading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  semanticsLabel: 'Loading notifications',
                 ),
-                const SizedBox(height: 8),
-                const Text('Everything important, in one gentle place.'),
-                const SizedBox(height: 22),
-                for (final item in items)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Material(
-                      color: FurUColors.card(context),
-                      borderRadius: BorderRadius.circular(20),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        leading: CircleAvatar(
-                          backgroundColor:
-                              item.status == ApplicationStatus.draft
-                              ? FurUColors.peach
-                              : FurUColors.sage,
-                          child: Icon(
-                            item.status == ApplicationStatus.draft
-                                ? Icons.edit_note_rounded
-                                : Icons.notifications_active_outlined,
-                            color: FurUColors.forest,
-                          ),
-                        ),
-                        title: Text(
-                          item.status == ApplicationStatus.draft
-                              ? 'Your draft is waiting'
-                              : '${item.status.label}: ${item.title}',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        subtitle: Text(
-                          item.status == ApplicationStatus.draft
-                              ? 'Continue when you’re ready.'
-                              : 'Open this update to review the details.',
-                        ),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () => openWorkflow(context, item),
+              )
+            : _failed
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        size: 44,
+                        color: colors.primary,
                       ),
-                    ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'Couldn’t load your updates',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Please check your connection and try again.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
+                        onPressed: _load,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Try again'),
+                      ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+              )
+            : null,
+      ),
     );
   }
 }
