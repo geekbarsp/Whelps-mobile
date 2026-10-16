@@ -464,7 +464,7 @@ void main() {
     await tester.tap(find.text('Create account'));
     await tester.pumpAndSettle();
     expect(app.profile!.name, 'Jamie Rivera');
-    expect(find.text('Your forever friend\nis waiting.'), findsOneWidget);
+    expect(find.text('Your forever\nfriend is waiting.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('Notification center opens a saved draft', (tester) async {
@@ -491,7 +491,7 @@ void main() {
     await tester.pumpWidget(FurUApp(controller: app));
     await tester.pumpAndSettle();
 
-    expect(find.text('Your forever friend\nis waiting.'), findsOneWidget);
+    expect(find.text('Your forever\nfriend is waiting.'), findsOneWidget);
     for (var i = 0; i < 4; i++) {
       await tester.drag(find.byType(Scrollable).first, const Offset(0, -550));
       await tester.pumpAndSettle();

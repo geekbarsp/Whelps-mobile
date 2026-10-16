@@ -21,7 +21,7 @@ class FurUHomeDashboard extends StatelessWidget {
     return PageBody(
       child: ListView(
         key: const PageStorageKey('home-dashboard-scroll'),
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 28),
         children: [
           FurUReveal(
             child: Row(
@@ -60,105 +60,72 @@ class FurUHomeDashboard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
           FurUReveal(
             delay: const Duration(milliseconds: 60),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hello, $firstName  ✦',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        'Your forever friend\nis waiting.',
-                        style: Theme.of(context).textTheme.headlineLarge
-                            ?.copyWith(
-                              fontSize: 35,
-                              height: 1.04,
-                              letterSpacing: -1.4,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: Transform.rotate(
-                    angle: -.08,
-                    child: Text(
-                      'Good pets,\nbrighter\ntomorrows  ♡',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.08,
-                        fontWeight: FontWeight.w700,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? const Color(0xFFFFA552)
-                            : const Color(0xFF6D3D27),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: _HomeGreeting(firstName: firstName),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           FurUReveal(
             delay: const Duration(milliseconds: 110),
             child: _SearchBar(onTap: onDiscover),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           FurUReveal(
             delay: const Duration(milliseconds: 160),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _DashboardAction(
-                    title: 'Adopt',
-                    subtitle: 'Find a friend',
-                    icon: Icons.pets_rounded,
-                    background: const Color(0xFFF3EBDD),
-                    onTap: onDiscover,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _DashboardAction(
-                    title: 'Rehome',
-                    subtitle: 'A fresh start',
-                    icon: Icons.home_outlined,
-                    background: const Color(0xFFFFD7AA),
-                    onTap: () => openWorkflow(
-                      context,
-                      app.newDraft(SubmissionKind.rehome),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final largeText =
+                    MediaQuery.textScalerOf(context).scale(14) > 19;
+                final width = largeText
+                    ? constraints.maxWidth
+                    : (constraints.maxWidth - 20) / 3;
+                return Wrap(
+                  spacing: 10,
+                  runSpacing: 12,
+                  children: [
+                    SizedBox(
+                      width: width,
+                      child: _DashboardAction(
+                        title: 'Adopt',
+                        subtitle: 'Find a friend',
+                        icon: Icons.pets_rounded,
+                        background: const Color(0xFFFFF3E3),
+                        portrait: 0,
+                        onTap: onDiscover,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _DashboardAction(
-                    title: 'Rescue',
-                    subtitle: 'Find help',
-                    icon: Icons.volunteer_activism_outlined,
-                    background: const Color(0xFFE8EDF7),
-                    onTap: () => openRescue(context),
-                  ),
-                ),
-              ],
+                    SizedBox(
+                      width: width,
+                      child: _DashboardAction(
+                        title: 'Rehome',
+                        subtitle: 'A fresh start',
+                        icon: Icons.home_outlined,
+                        background: const Color(0xFFFFEBD9),
+                        portrait: 1,
+                        onTap: () => openWorkflow(
+                          context,
+                          app.newDraft(SubmissionKind.rehome),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: width,
+                      child: _DashboardAction(
+                        title: 'Rescue',
+                        subtitle: 'Find help',
+                        icon: Icons.volunteer_activism_outlined,
+                        background: const Color(0xFFEAF3FF),
+                        portrait: 2,
+                        onTap: () => openRescue(context),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           FurUReveal(
             delay: const Duration(milliseconds: 220),
             child: _EditorialHero(onBrowse: onDiscover),
@@ -220,6 +187,106 @@ class FurUHomeDashboard extends StatelessWidget {
   }
 }
 
+class _HomeGreeting extends StatelessWidget {
+  final String firstName;
+  const _HomeGreeting({required this.firstName});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final largeText = MediaQuery.textScalerOf(context).scale(14) > 19;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: 'Hello, $firstName '),
+                        const WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: Icon(
+                            Icons.waving_hand_rounded,
+                            size: 19,
+                            color: Color(0xFFFFB632),
+                          ),
+                        ),
+                      ],
+                    ),
+                    style: TextStyle(fontSize: 16, color: scheme.onSurface),
+                  ),
+                ),
+                if (!largeText)
+                  Transform.rotate(
+                    angle: -.07,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: dark
+                            ? scheme.surfaceContainerHigh
+                            : const Color(0xFFFFEDDA),
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: Text(
+                        'Good pets,\nbrighter tomorrows.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 1.2,
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 13),
+                  child: Text(
+                    'Your forever\nfriend is waiting.',
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      fontSize: (constraints.maxWidth / 9.1).clamp(30.0, 48.0),
+                      height: 1.03,
+                      letterSpacing: -1.5,
+                      color: dark ? scheme.onSurface : const Color(0xFF321609),
+                    ),
+                  ),
+                ),
+                if (!largeText)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Transform.rotate(
+                      angle: -.18,
+                      child: const Icon(
+                        Icons.favorite_border_rounded,
+                        color: Color(0xFFFF9A5F),
+                        size: 30,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _PartnershipHeader extends StatelessWidget {
   const _PartnershipHeader();
 
@@ -234,7 +301,7 @@ class _PartnershipHeader extends StatelessWidget {
             TextSpan(
               style: const TextStyle(
                 fontFamily: 'Fraunces',
-                fontSize: 27,
+                fontSize: 35,
                 height: .9,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -1.4,
@@ -250,6 +317,14 @@ class _PartnershipHeader extends StatelessWidget {
                   text: 'You',
                   style: TextStyle(color: Color(0xFFFF8A17)),
                 ),
+                const WidgetSpan(
+                  alignment: PlaceholderAlignment.top,
+                  child: Icon(
+                    Icons.pets_rounded,
+                    size: 14,
+                    color: Color(0xFFFF8A17),
+                  ),
+                ),
               ],
             ),
           ),
@@ -257,7 +332,7 @@ class _PartnershipHeader extends StatelessWidget {
           Text(
             'WE LOVE THEM LIKE YOU DO',
             style: TextStyle(
-              fontSize: 6.4,
+              fontSize: 7.4,
               letterSpacing: .25,
               fontWeight: FontWeight.w900,
               color: Theme.of(context).colorScheme.onSurface,
@@ -276,19 +351,44 @@ class _PartnershipHeader extends StatelessWidget {
         ),
       ),
       SizedBox(
-        width: 50,
-        height: 47,
-        child: ClipRect(
-          child: Transform.scale(
-            scale: 1.65,
-            child: Image.asset(
-              'assets/brand/whelps-logo.png',
-              width: 36,
-              height: 36,
-              fit: BoxFit.contain,
-              semanticLabel: 'WHELPS',
+        width: 58,
+        height: 54,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRect(
+              child: Transform.scale(
+                scale: 1.65,
+                child: Image.asset(
+                  'assets/brand/whelps-logo.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                  excludeFromSemantics: true,
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: ColoredBox(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: const Text(
+                  'WHELPS',
+                  textAlign: TextAlign.center,
+                  textScaler: TextScaler.noScaling,
+                  style: TextStyle(
+                    fontSize: 9,
+                    height: 1.4,
+                    letterSpacing: 1.8,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFD76809),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     ],
@@ -304,14 +404,14 @@ class _SearchBar extends StatelessWidget {
     color: FurUColors.card(context),
     elevation: Theme.of(context).brightness == Brightness.dark ? 0 : 2,
     shadowColor: const Color(0x162C1C12),
-    borderRadius: BorderRadius.circular(19),
+    borderRadius: BorderRadius.circular(24),
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(19),
-      child: SizedBox(
-        height: 60,
+      borderRadius: BorderRadius.circular(24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 50),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           child: Row(
             children: [
               Icon(
@@ -328,6 +428,12 @@ class _SearchBar extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
+              ),
+              Container(
+                height: 22,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                width: 1,
+                color: Theme.of(context).colorScheme.outlineVariant,
               ),
               Icon(
                 Icons.tune_rounded,
@@ -346,6 +452,7 @@ class _DashboardAction extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color background;
+  final int portrait;
   final VoidCallback onTap;
 
   const _DashboardAction({
@@ -353,6 +460,7 @@ class _DashboardAction extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.background,
+    required this.portrait,
     required this.onTap,
   });
 
@@ -360,65 +468,125 @@ class _DashboardAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final scheme = Theme.of(context).colorScheme;
+    final accent = portrait == 2
+        ? (dark ? const Color(0xFFB6D6FF) : const Color(0xFF365B7F))
+        : scheme.primary;
     return FurUPress(
-      child: Material(
-        color: dark ? scheme.surfaceContainerHigh : background,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
-          side: BorderSide(color: scheme.outlineVariant),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.brown.withValues(alpha: dark ? 0 : .07),
+              offset: const Offset(0, 3),
+              blurRadius: 7,
+            ),
+          ],
         ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: SizedBox(
-            height: 142,
-            child: Padding(
-              padding: const EdgeInsets.all(13),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 45,
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: dark
-                          ? scheme.primaryContainer
-                          : const Color(0xD9FFFFFF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, size: 24, color: scheme.primary),
-                  ),
-                  const Spacer(),
-                  Text(
-                    title,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontFamily: 'Fraunces',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: scheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 10),
+        child: Material(
+          color: dark ? scheme.surfaceContainerHigh : background,
+          borderRadius: BorderRadius.circular(20),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+                final photoHeight = (width * 1.05).clamp(92.0, 360.0);
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ExcludeSemantics(
+                      child: SizedBox(
+                        height: photoHeight,
+                        child: ClipRect(
+                          child: OverflowBox(
+                            alignment: Alignment.topLeft,
+                            minWidth: width * 3,
+                            maxWidth: width * 3,
+                            minHeight: width * 2,
+                            maxHeight: width * 2,
+                            child: Transform.translate(
+                              offset: Offset(-portrait * width, -width * .15),
+                              child: Image.asset(
+                                'assets/brand/home-action-pets.png',
+                                width: width * 3,
+                                height: width * 2,
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 14,
-                        color: scheme.primary,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 25, 8, 11),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: TextStyle(
+                                  fontFamily: 'Fraunces',
+                                  fontSize: 19,
+                                  height: 1.1,
+                                  fontWeight: FontWeight.w800,
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      subtitle,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        height: 1.2,
+                                        color: scheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 15,
+                                    color: accent,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          left: 10,
+                          top: -23,
+                          child: Container(
+                            width: 43,
+                            height: 43,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: dark
+                                  ? scheme.surfaceContainerHigh
+                                  : background,
+                              border: Border.all(
+                                color: dark
+                                    ? scheme.surfaceContainerHigh
+                                    : Colors.white,
+                                width: 3,
+                              ),
+                            ),
+                            child: Icon(icon, size: 25, color: accent),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -433,96 +601,104 @@ class _EditorialHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ClipRRect(
-    borderRadius: BorderRadius.circular(25),
-    child: SizedBox(
-      height: 245,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/brand/reference-cat.jpg',
+    borderRadius: BorderRadius.circular(23),
+    child: Stack(
+      children: [
+        Positioned.fill(
+          child: Image.asset(
+            'assets/brand/home-kitten-banner.png',
             fit: BoxFit.cover,
-            alignment: const Alignment(.15, .05),
+            alignment: Alignment.centerRight,
+            excludeFromSemantics: true,
           ),
-          const DecoratedBox(
+        ),
+        const Positioned.fill(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Color(0xE6422617),
-                  Color(0x522E1C12),
-                  Color(0x001A100A),
-                ],
-                stops: [0, .5, 1],
+                colors: [Color(0x70371F0D), Color(0x00371F0D)],
               ),
             ),
           ),
-          Positioned(
-            left: 18,
-            top: 18,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFDF8F1),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.pets_rounded, size: 14, color: FurUColors.forest),
-                  SizedBox(width: 7),
-                  Text(
-                    'A SECOND CHANCE',
-                    style: TextStyle(
-                      fontSize: 9,
-                      letterSpacing: 1,
-                      fontWeight: FontWeight.w900,
+        ),
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 11,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEDD5),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.pets_rounded,
+                      size: 17,
+                      color: FurUColors.forest,
                     ),
-                  ),
-                ],
+                    SizedBox(width: 7),
+                    Flexible(
+                      child: Text(
+                        'A SECOND CHANCE',
+                        style: TextStyle(
+                          color: Color(0xFF613A20),
+                          fontSize: 10,
+                          letterSpacing: .6,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            left: 20,
-            right: 20,
-            bottom: 18,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Small paws.\nBig love.',
-                  style: TextStyle(
-                    fontFamily: 'Fraunces',
-                    fontSize: 31,
-                    height: .94,
+              const SizedBox(height: 23),
+              const Text(
+                'Small paws.\nBig love.',
+                style: TextStyle(
+                  fontFamily: 'Fraunces',
+                  fontSize: 34,
+                  height: .98,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  shadows: [Shadow(color: Color(0x5024170E), blurRadius: 6)],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Real pets. Brighter tomorrows.',
+                style: TextStyle(color: Colors.white, fontSize: 13),
+              ),
+              const SizedBox(height: 15),
+              FilledButton.icon(
+                onPressed: onBrowse,
+                icon: const Icon(Icons.arrow_forward_rounded, size: 22),
+                label: const Text('Meet the pets'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(170, 46),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  textStyle: const TextStyle(
+                    fontFamily: 'NunitoSans',
+                    fontSize: 17,
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                  ),
+                  backgroundColor: const Color(0xFFFF9825),
+                  foregroundColor: const Color(0xFF291709),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(17),
                   ),
                 ),
-                const SizedBox(height: 7),
-                const Text(
-                  'Real pets. Brighter tomorrows.',
-                  style: TextStyle(color: Colors.white, fontSize: 13),
-                ),
-                const SizedBox(height: 13),
-                FilledButton.icon(
-                  onPressed: onBrowse,
-                  icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                  label: const Text('Meet the pets'),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(155, 44),
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    backgroundColor: const Color(0xFFFF9628),
-                    foregroundColor: const Color(0xFF251B16),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
