@@ -34,7 +34,7 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 30),
         children: [
           const _ProfileReferenceHeader(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _ProfileIdentityCard(user: user),
           const SizedBox(height: 12),
           _ProfileActionTile(
@@ -139,23 +139,7 @@ class _ProfileReferenceHeader extends StatelessWidget {
   const _ProfileReferenceHeader();
 
   @override
-  Widget build(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-      ? const _NativeProfileHeader()
-      : SizedBox(
-          height: 174,
-          width: double.infinity,
-          child: Semantics(
-            image: true,
-            label: 'FurYou and Whelps. Your FurU corner. Manage your account, keep in touch, and continue making a brighter tomorrow for pets in need.',
-            child: Image.asset(
-              'assets/brand/profile-header-transparent.png',
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-              excludeFromSemantics: true,
-            ),
-          ),
-        );
+  Widget build(BuildContext context) => const _NativeProfileHeader();
 }
 
 class _NativeProfileHeader extends StatelessWidget {
@@ -167,163 +151,71 @@ class _NativeProfileHeader extends StatelessWidget {
     final ink = dark ? const Color(0xFFFFF3E9) : const Color(0xFF321E14);
     const orange = Color(0xFFFF8517);
     return SizedBox(
-      height: 174,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            left: 0,
-            top: 2,
-            child: Semantics(
-              label: 'FurYou and Whelps',
-              image: true,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      height: 54,
+      child: Semantics(
+        label: 'FurYou and Whelps',
+        image: true,
+        child: Row(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
+                      fontFamily: 'Fraunces',
+                      fontSize: 27,
+                      height: .9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1.4,
+                    ),
                     children: [
-                      Text.rich(
-                        TextSpan(
-                          style: const TextStyle(
-                            fontFamily: 'Fraunces',
-                            fontSize: 29,
-                            height: .9,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -1.5,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: 'Fur',
-                              style: TextStyle(color: ink),
-                            ),
-                            const TextSpan(
-                              text: 'You',
-                              style: TextStyle(color: orange),
-                            ),
-                          ],
-                        ),
+                      TextSpan(
+                        text: 'Fur',
+                        style: TextStyle(color: ink),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'WE LOVE THEM LIKE YOU DO',
-                        style: TextStyle(
-                          color: ink,
-                          fontSize: 6.2,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: .2,
-                        ),
+                      const TextSpan(
+                        text: 'You',
+                        style: TextStyle(color: orange),
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(
-                      '×',
-                      style: TextStyle(color: ink, fontSize: 17),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Image.asset(
-                      'assets/brand/whelps-logo.png',
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                      excludeFromSemantics: true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            right: 5,
-            top: 2,
-            child: Transform.rotate(
-              angle: -.12,
-              child: Text(
-                'Good\npets\nbrighter\ntomorrows',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 9.5,
-                  height: .95,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.w700,
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  'WE LOVE THEM LIKE YOU DO',
+                  style: TextStyle(
+                    color: ink,
+                    fontSize: 5.8,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: .2,
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Text('×', style: TextStyle(color: ink, fontSize: 17)),
+            ),
+            SizedBox(
+              width: 46,
+              height: 46,
+              child: Image.asset(
+                'assets/brand/whelps-logo.png',
+                fit: BoxFit.contain,
+                filterQuality: FilterQuality.high,
+                excludeFromSemantics: true,
               ),
             ),
-          ),
-          Positioned(
-            right: 0,
-            top: 5,
-            child: Icon(
+            const Spacer(),
+            Icon(
               Icons.pets_rounded,
-              size: 23,
-              color: orange.withValues(alpha: .18),
+              size: 25,
+              color: orange.withValues(alpha: .24),
             ),
-          ),
-          Positioned(
-            left: 0,
-            top: 68,
-            right: 0,
-            child: Text(
-              'Your FurU corner',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: 'Fraunces',
-                fontSize: 33,
-                height: 1,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1.2,
-                color: ink,
-              ),
-            ),
-          ),
-          Positioned(
-            left: 2,
-            top: 108,
-            right: 48,
-            child: Text(
-              'Manage your account, keep in touch,\nand continue making a brighter tomorrow\nfor pets in need.',
-              style: Theme.of(context).textTheme.bodyMedium
-                  ?.copyWith(fontSize: 13.5, height: 1.22),
-            ),
-          ),
-          const Positioned(
-            left: 190,
-            bottom: 2,
-            child: Icon(Icons.favorite_border_rounded, size: 24, color: orange),
-          ),
-          Positioned(
-            right: 8,
-            bottom: 16,
-            child: Transform.rotate(
-              angle: .42,
-              child: const Column(
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: orange,
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
-                    ),
-                    child: SizedBox(width: 4, height: 25),
-                  ),
-                  SizedBox(height: 5),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: orange,
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
-                    ),
-                    child: SizedBox(width: 4, height: 12),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -690,11 +582,6 @@ class LegacyProfileScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(22),
         children: [
-          Text(
-            'Your FurU corner',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          const SizedBox(height: 24),
           FurUSectionCard(
             child: Column(
               children: [
