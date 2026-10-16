@@ -169,8 +169,18 @@ class WhelpsApiRepository
 
   @override
   Future<List<Pet>> fetchPets() async {
-    final data = await _request('/api/pets');
-    return _list(data['pets']).map(_petFromRow).toList();
+    try {
+      final data = await _request('/api/pets');
+      final rows = _list(data['pets']);
+      final local = _local()..['cachedPets'] = rows;
+      await _saveLocal(local);
+      return rows.map(_petFromRow).toList();
+    } catch (_) {
+      final cached = _list(_local()['cachedPets']);
+      return cached.isEmpty
+          ? List<Pet>.of(samplePets)
+          : cached.map(_petFromRow).toList();
+    }
   }
 
   Pet _petFromRow(Map<String, dynamic> row) {
@@ -268,7 +278,7 @@ class WhelpsApiRepository
         .map(Submission.fromJson)
         .where((item) => item.status == ApplicationStatus.draft)
         .where((draft) => !remote.any((item) => item.id == draft.id));
-    return {
+    final account = <String, dynamic>{
       'profile': _profile(user).toJson(),
       'favorites': List<String>.from(local['favorites'] as List? ?? const []),
       'submissions': [
@@ -278,6 +288,11 @@ class WhelpsApiRepository
       'notificationsEnabled': local['notificationsEnabled'] ?? true,
       'themePreference': local['themePreference'] ?? 'defaultTheme',
     };
+    local
+      ..['cachedUser'] = user
+      ..['cachedAccount'] = account;
+    await _saveLocal(local);
+    return account;
   }
 
   Submission _submissionFromApplication(Map<String, dynamic> row) => Submission(
@@ -335,8 +350,15 @@ class WhelpsApiRepository
       if (user.isEmpty) return null;
       return await _account(user);
     } catch (_) {
-      await _clearSession();
-      return null;
+      // A 401 clears the token in _request and is a real signed-out state.
+      // Network failures keep the token, so the last account can open offline.
+      if (await _readSessionValue(_tokenKey) == null) return null;
+      final local = _local();
+      final cachedAccount = _map(local['cachedAccount']);
+      if (cachedAccount.isEmpty) return null;
+      final cachedUser = _map(local['cachedUser']);
+      _currentUser = cachedUser.isEmpty ? null : cachedUser;
+      return cachedAccount;
     }
   }
 
@@ -438,6 +460,7 @@ class WhelpsApiRepository
       ..['favorites'] = data['favorites'] ?? const []
       ..['notificationsEnabled'] = data['notificationsEnabled'] ?? true
       ..['themePreference'] = data['themePreference'] ?? 'defaultTheme'
+      ..['cachedAccount'] = data
       ..['drafts'] = (data['submissions'] as List? ?? const [])
           .where((raw) => (raw as Map)['status'] == 'draft')
           .toList();
@@ -445,6 +468,13 @@ class WhelpsApiRepository
     if (_currentUser == null) return;
     final region = '${profile['region'] ?? _currentUser!['region'] ?? ''}';
     final city = '${profile['city'] ?? _currentUser!['city'] ?? ''}';
+    final profileChanged = '${profile['name'] ?? ''}' !=
+            '${_currentUser!['name'] ?? ''}' ||
+        '${profile['email'] ?? ''}' != '${_currentUser!['email'] ?? ''}' ||
+        '${profile['phone'] ?? ''}' != '${_currentUser!['phone'] ?? ''}' ||
+        region != '${_currentUser!['region'] ?? ''}' ||
+        city != '${_currentUser!['city'] ?? ''}';
+    if (!profileChanged) return;
     final result = await _request(
       '/api/auth/me',
       method: 'PATCH',
@@ -458,6 +488,9 @@ class WhelpsApiRepository
       },
     );
     _currentUser = _map(result['user']);
+    local['cachedUser'] = _currentUser;
+    local['cachedAccount'] = data;
+    await _saveLocal(local);
   }
 
   @override

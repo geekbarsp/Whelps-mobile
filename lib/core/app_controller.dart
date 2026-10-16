@@ -71,9 +71,11 @@ class AppController extends ChangeNotifier {
         }
       }
     } catch (_) {
-      error = usesSecureBackend
-          ? 'We could not connect to WHELPS. Check your internet connection and try again.'
-          : 'We could not load your local data. Please try again.';
+      // The connected app remains usable with cached data when the API is
+      // temporarily unavailable. Local repository failures still need retry.
+      if (!usesSecureBackend) {
+        error = 'We could not load your local data. Please try again.';
+      }
     }
     loading = false;
     loadingProgress = 1;

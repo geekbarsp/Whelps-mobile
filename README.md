@@ -11,7 +11,7 @@ Flutter 3.47.5 / Dart 3.13.4 was installed at `C:/Users/Admin/development/flutte
 & 'C:/Users/Admin/development/flutter/bin/flutter.bat' run -d chrome
 ```
 
-The app is online-only and defaults to `https://whelps-woad.vercel.app`. To use another deployment, copy `config/whelps.example.json` to `config/whelps.json`, change `WHELPS_API_URL`, and launch with **FurU Online** in VS Code.
+The app defaults to `https://whelps-woad.vercel.app` and uses the same live WHELPS database whenever a connection is available. It keeps the last loaded pets, signed-in account, drafts, favorites, and settings on the device so the main experience can still open offline. Sign-in, submissions, admin changes, and other server updates require a connection. To use another deployment, copy `config/whelps.example.json` to `config/whelps.json`, change `WHELPS_API_URL`, and launch with **FurU Online** in VS Code.
 
 ## Mobile Preview extension
 
