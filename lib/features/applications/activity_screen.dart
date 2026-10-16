@@ -106,23 +106,10 @@ class _ReferenceActivityScreenState extends State<ActivityScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Every step, together.',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontSize: 31,
-                      height: 1.05,
-                      letterSpacing: -1.1,
-                    ),
-                  ),
-                  const SizedBox(height: 9),
-                  const Text(
-                    'Your applications, adoptions, and activity in one place.',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF8C8580)),
-                  ),
-                ],
+              child: Text(
+                'Activity',
+                style: Theme.of(context).textTheme.headlineLarge
+                    ?.copyWith(fontSize: 31, height: 1.05, letterSpacing: -1.1),
               ),
             ),
             const SizedBox(width: 10),
