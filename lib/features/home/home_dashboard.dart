@@ -8,6 +8,7 @@ import '../applications/activity_screen.dart';
 import '../applications/workflow_screen.dart';
 import '../pets/pet_detail.dart';
 import '../rescue/rescue_screen.dart';
+import 'our_story_screen.dart';
 
 class FurUHomeDashboard extends StatelessWidget {
   final void Function([String species]) onDiscover;
@@ -171,7 +172,6 @@ class FurUHomeDashboard extends StatelessWidget {
     );
   }
 }
-
 class _HomeGreeting extends StatelessWidget {
   final String firstName;
   const _HomeGreeting({required this.firstName});
@@ -1213,7 +1213,7 @@ class _HomeSupport extends StatelessWidget {
             icon: Icons.favorite_border_rounded,
             title: 'The care behind FurYou',
             subtitle: 'Our story with WHELPS',
-            onTap: () => _showStory(context),
+            onTap: () => openOurStory(context),
           ),
         ],
       ),
@@ -1279,39 +1279,3 @@ class _SupportLink extends StatelessWidget {
     );
   }
 }
-
-void _showStory(BuildContext context) => showModalBottomSheet<void>(
-  context: context,
-  showDragHandle: true,
-  isScrollControlled: true,
-  backgroundColor: Theme.of(context).colorScheme.surface,
-  builder: (context) => SafeArea(
-    child: SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 30),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const _PartnershipHeader(),
-          const SizedBox(height: 24),
-          Text(
-            'Every pet deserves\na new beginning.',
-            style: TextStyle(
-              fontFamily: 'Fraunces',
-              fontSize: 29,
-              height: 1.08,
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            'FurYou brings caring families closer to rescued pets. Together with WHELPS, we combine rehabilitation with thoughtful adoption screening.',
-          ),
-          const SizedBox(height: 20),
-          const _JourneyCard(),
-        ],
-      ),
-    ),
-  ),
-);

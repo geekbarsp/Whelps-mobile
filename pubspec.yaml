@@ -71,6 +71,9 @@ flutter:
     - assets/brand/profile-reference.png
     - assets/brand/settings-reference.png
     - assets/brand/profile-header-transparent.png
+    - assets/brand/our-story-dogs.webp
+    - assets/brand/whelps-team.jpg
+    - assets/brand/whelps-cats-feeding.jpg
   fonts:
     - family: Fraunces
       fonts:
