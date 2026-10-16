@@ -83,42 +83,28 @@ class Brand extends StatelessWidget {
   const Brand({super.key, this.small = false});
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'FurYou and WHELPS. We love them like you do.',
+    label: 'FurU x Whelps',
     image: true,
     child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      width: small ? 58 : 78,
+      height: small ? 58 : 78,
+      padding: EdgeInsets.all(small ? 4 : 6),
       decoration: BoxDecoration(
-        color: FurUColors.cocoa,
+        color: const Color(0xFFFFF8ED),
         borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            'assets/brand/furyou-logo.png',
-            width: small ? 100 : 126,
-            excludeFromSemantics: true,
-            filterQuality: FilterQuality.high,
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 7),
-            child: Text(
-              '×',
-              style: TextStyle(color: FurUColors.orange, fontSize: 14),
-            ),
-          ),
-          ClipRect(
-            child: Transform.scale(
-              scale: 1.65,
-              child: Image.asset(
-                'assets/brand/whelps-logo.png',
-                width: small ? 36 : 42,
-                height: small ? 36 : 42,
-                excludeFromSemantics: true,
-              ),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .07),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: Image.asset(
+        'assets/brand/furu-whelps-logo.png',
+        fit: BoxFit.contain,
+        excludeFromSemantics: true,
+        filterQuality: FilterQuality.high,
       ),
     ),
   );

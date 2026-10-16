@@ -146,79 +146,10 @@ class _NativeProfileHeader extends StatelessWidget {
   const _NativeProfileHeader();
 
   @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final ink = dark ? const Color(0xFFFFF3E9) : const Color(0xFF321E14);
-    const orange = Color(0xFFFF8517);
-    return SizedBox(
-      height: 54,
-      child: Semantics(
-        label: 'FurYou and Whelps',
-        image: true,
-        child: Row(
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text.rich(
-                  TextSpan(
-                    style: const TextStyle(
-                      fontFamily: 'Fraunces',
-                      fontSize: 27,
-                      height: .9,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -1.4,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: 'Fur',
-                        style: TextStyle(color: ink),
-                      ),
-                      const TextSpan(
-                        text: 'You',
-                        style: TextStyle(color: orange),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'WE LOVE THEM LIKE YOU DO',
-                  style: TextStyle(
-                    color: ink,
-                    fontSize: 5.8,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: .2,
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text('×', style: TextStyle(color: ink, fontSize: 17)),
-            ),
-            SizedBox(
-              width: 46,
-              height: 46,
-              child: Image.asset(
-                'assets/brand/whelps-logo.png',
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-                excludeFromSemantics: true,
-              ),
-            ),
-            const Spacer(),
-            Icon(
-              Icons.pets_rounded,
-              size: 25,
-              color: orange.withValues(alpha: .24),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const SizedBox(
+    height: 62,
+    child: Align(alignment: Alignment.centerLeft, child: Brand(small: true)),
+  );
 }
 
 class _ProfileIdentityCard extends StatelessWidget {
