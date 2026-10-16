@@ -158,7 +158,6 @@ void main() {
       'name': 'Mochi',
       'breed': 'Mixed breed',
       'age': '2 years',
-      'image': 'https://example.com/mochi.jpg',
       'description': 'A gentle companion',
     }.entries) {
       await tester.ensureVisible(find.byKey(ValueKey(entry.key)));
@@ -169,7 +168,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    expect(find.text('2. Health & review'), findsOneWidget);
+    expect(find.text('Health & review'), findsOneWidget);
+    expect(find.text('Spay / neuter status'), findsOneWidget);
+    expect(find.text('Vaccination status'), findsOneWidget);
+    expect(find.text('Health verification'), findsOneWidget);
+    expect(find.text('Save pet for review'), findsOneWidget);
     await tester.ensureVisible(find.text('Back to pet details'));
     await tester.tap(find.text('Back to pet details'));
     await tester.pumpAndSettle();

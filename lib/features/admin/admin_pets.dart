@@ -650,20 +650,17 @@ class _AddPetScreen extends StatefulWidget {
 class _AddPetScreenState extends State<_AddPetScreen> {
   final form = GlobalKey<FormState>();
   final fields = {
-    for (final key in [
-      'name',
-      'breed',
-      'age',
-      'image',
-      'description',
-      'healthNotes',
-    ])
+    for (final key in ['name', 'breed', 'age', 'description', 'healthNotes'])
       key: TextEditingController(),
   };
   String type = 'Dog',
       gender = 'Male',
       fixed = 'Unknown',
-      vaccination = 'Unknown';
+      vaccination = 'Unknown',
+      healthVerification = 'Pending Verification',
+      existingPhoto = '/images/pets/buddy.webp';
+  Uint8List? photoBytes;
+  String? photoName;
   int step = 0;
   bool saving = false;
   @override
@@ -686,9 +683,12 @@ class _AddPetScreenState extends State<_AddPetScreen> {
         for (final entry in fields.entries) entry.key: entry.value.text.trim(),
         'type': type,
         'gender': gender,
+        'image': photoBytes == null
+            ? existingPhoto
+            : 'data:image/${_photoExtension(photoName!)};base64,${base64Encode(photoBytes!)}',
         'fixedStatus': fixed,
         'vaccinationStatus': vaccination,
-        'healthVerification': 'Pending Verification',
+        'healthVerification': healthVerification,
         'published': false,
       });
       if (!mounted) return;
@@ -707,6 +707,122 @@ class _AddPetScreenState extends State<_AddPetScreen> {
     }
   }
 
+  String _photoExtension(String name) {
+    final extension = name.split('.').last.toLowerCase();
+    return extension == 'jpg' ? 'jpeg' : extension;
+  }
+
+  Future<void> _pickPhoto() async {
+    try {
+      final file = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: const ['jpg', 'jpeg', 'png', 'webp'],
+      );
+      if (file == null || !mounted) return;
+      final length = await file.length();
+      if (length == null || length == 0 || length > 2 * 1024 * 1024) {
+        throw StateError('Choose a JPG, PNG, or WebP image up to 2 MB.');
+      }
+      final bytes = await file.readAsBytes();
+      if (!mounted) return;
+      setState(() {
+        photoBytes = bytes;
+        photoName = file.name;
+      });
+    } catch (error) {
+      if (mounted) showError(context, error);
+    }
+  }
+
+  Widget _photoPicker() {
+    final preview = photoBytes != null
+        ? Image.memory(photoBytes!, fit: BoxFit.cover)
+        : Image.network(
+            '${BackendConfig.whelpsApiUrl}$existingPhoto',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => const ColoredBox(
+              color: FurUColors.sage,
+              child: Icon(Icons.pets_rounded, color: FurUColors.forest),
+            ),
+          );
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: FurUColors.card(context),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Pet photo', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(width: 86, height: 96, child: preview),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: saving ? null : _pickPhoto,
+                      icon: const Icon(Icons.add_photo_alternate_outlined),
+                      label: Text(photoName ?? 'Upload a photo'),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'JPG, PNG, or WebP · maximum 2 MB',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    if (photoBytes != null)
+                      TextButton(
+                        onPressed: saving
+                            ? null
+                            : () => setState(() {
+                                photoBytes = null;
+                                photoName = null;
+                              }),
+                        child: const Text('Use an existing image instead'),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (photoBytes == null) ...[
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String>(
+              initialValue: existingPhoto,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                labelText: 'Or use an existing image',
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: '/images/pets/buddy.webp',
+                  child: Text('Golden dog'),
+                ),
+                DropdownMenuItem(
+                  value: '/images/pets/bella.webp',
+                  child: Text('Gray cat'),
+                ),
+              ],
+              onChanged: saving
+                  ? null
+                  : (value) => setState(() => existingPhoto = value!),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _field(
     String key,
     String label, {
@@ -719,24 +835,11 @@ class _AddPetScreenState extends State<_AddPetScreen> {
       controller: fields[key],
       maxLines: lines,
       enabled: !saving,
-      keyboardType: key == 'image'
-          ? TextInputType.url
-          : lines > 1
-          ? TextInputType.multiline
-          : TextInputType.text,
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: key == 'image' ? 'Use an existing hosted pet photo.' : null,
-      ),
+      keyboardType: lines > 1 ? TextInputType.multiline : TextInputType.text,
+      decoration: InputDecoration(labelText: label),
       validator: (value) {
         if (required && (value == null || value.trim().isEmpty)) {
           return 'Enter $label.';
-        }
-        if (key == 'image') {
-          final uri = Uri.tryParse(value!.trim());
-          if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
-            return 'Enter a valid HTTPS photo URL.';
-          }
         }
         return null;
       },
@@ -764,7 +867,7 @@ class _AddPetScreenState extends State<_AddPetScreen> {
   Widget build(BuildContext context) => PopScope(
     canPop: !saving,
     child: Scaffold(
-      appBar: AppBar(title: const Text('Add Pet')),
+      appBar: AppBar(title: const Text('Add Pet Listing')),
       body: Form(
         key: form,
         child: SingleChildScrollView(
@@ -775,26 +878,33 @@ class _AddPetScreenState extends State<_AddPetScreen> {
               LinearProgressIndicator(value: (step + 1) / 2),
               const SizedBox(height: 16),
               Text(
-                step == 0 ? '1. Meet your pet' : '2. Health & review',
+                step == 0 ? 'Pet information' : 'Health & review',
                 style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 5),
+              Text(
+                step == 0
+                    ? 'Create the pet profile and add a clear photo.'
+                    : 'Record health details before the listing is published.',
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
               if (step == 0) ...[
                 _field('name', 'Pet name'),
-                _choice('Species', type, [
+                _choice('Animal type', type, [
                   'Dog',
                   'Cat',
                   'Other',
                 ], (v) => type = v),
                 _field('breed', 'Breed'),
                 _field('age', 'Age'),
-                _choice('Sex', gender, [
+                _choice('Gender', gender, [
                   'Male',
                   'Female',
                   'Unknown',
                 ], (v) => gender = v),
-                _field('image', 'Photo URL'),
-                _field('description', 'About this pet', lines: 3),
+                _photoPicker(),
+                _field('description', 'Pet description', lines: 4),
               ] else ...[
                 FurUSectionCard(
                   child: Text(
@@ -815,6 +925,9 @@ class _AddPetScreenState extends State<_AddPetScreen> {
                   'Partially vaccinated',
                   'Not vaccinated',
                 ], (v) => vaccination = v),
+                _choice('Health verification', healthVerification, const [
+                  'Pending Verification',
+                ], (v) => healthVerification = v),
                 _field(
                   'healthNotes',
                   'Health notes',
