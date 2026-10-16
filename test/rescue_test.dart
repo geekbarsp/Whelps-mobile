@@ -51,6 +51,11 @@ void main() {
       await tester.pumpAndSettle();
       await app.enterGuest();
       await tester.pumpAndSettle();
+      await tester.drag(
+        find.byKey(const PageStorageKey('home-dashboard-scroll')),
+        const Offset(0, -180),
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Rescue').first);
       await tester.pumpAndSettle();
       expect(find.text('Contact for Rescue'), findsOneWidget);

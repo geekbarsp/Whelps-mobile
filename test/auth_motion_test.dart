@@ -153,7 +153,7 @@ void main() {
       app.gate.complete();
       await tester.pumpAndSettle();
       expect(find.byType(AuthMorphLoading), findsNothing);
-      expect(find.text('Your forever friend\nis waiting.'), findsOneWidget);
+      expect(find.text('Your forever\nfriend is waiting.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

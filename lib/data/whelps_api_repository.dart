@@ -183,7 +183,7 @@ class WhelpsApiRepository
       sex: '${row['gender'] ?? 'Unknown'}',
       size: 'Medium',
       location: 'Whelps Animal Care & Rehabilitation Center',
-      photo: image.startsWith('http')
+      photo: image.startsWith('http') || image.startsWith('data:image/')
           ? image
           : image.startsWith('/')
           ? '$baseUrl$image'

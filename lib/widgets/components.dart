@@ -348,18 +348,64 @@ class FurUStatusBadge extends StatelessWidget {
 class PetImage extends StatelessWidget {
   final Pet pet;
   const PetImage(this.pet, {super.key});
-  @override
-  Widget build(BuildContext context) => Image.asset(
-    pet.photo,
-    fit: BoxFit.cover,
-    semanticLabel: '${pet.name}, ${pet.breed}',
-    errorBuilder: (_, _, _) => const ColoredBox(
-      color: FurUColors.sage,
-      child: Center(
-        child: Icon(Icons.pets, size: 64, color: FurUColors.forest),
-      ),
+
+  Widget _fallback(BuildContext context) => ColoredBox(
+    color: Theme.of(context).brightness == Brightness.dark
+        ? Theme.of(context).colorScheme.surfaceContainerHigh
+        : FurUColors.sage,
+    child: const Center(
+      child: Icon(Icons.pets, size: 64, color: FurUColors.forest),
     ),
   );
+
+  @override
+  Widget build(BuildContext context) {
+    final label = '${pet.name}, ${pet.breed}';
+    final photo = pet.photo.trim();
+    if (photo.startsWith('https://') || photo.startsWith('http://')) {
+      return Image.network(
+        photo,
+        fit: BoxFit.cover,
+        semanticLabel: label,
+        loadingBuilder: (context, child, progress) => progress == null
+            ? child
+            : Stack(
+                fit: StackFit.expand,
+                children: [
+                  _fallback(context),
+                  const Center(
+                    child: SizedBox.square(
+                      dimension: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ],
+              ),
+        errorBuilder: (context, _, _) => _fallback(context),
+      );
+    }
+    if (photo.startsWith('data:image/')) {
+      try {
+        final bytes = Uri.parse(photo).data?.contentAsBytes();
+        if (bytes != null) {
+          return Image.memory(
+            bytes,
+            fit: BoxFit.cover,
+            semanticLabel: label,
+            errorBuilder: (context, _, _) => _fallback(context),
+          );
+        }
+      } on FormatException {
+        return _fallback(context);
+      }
+    }
+    return Image.asset(
+      photo,
+      fit: BoxFit.cover,
+      semanticLabel: label,
+      errorBuilder: (context, _, _) => _fallback(context),
+    );
+  }
 }
 
 class FurUPetCard extends StatelessWidget {
