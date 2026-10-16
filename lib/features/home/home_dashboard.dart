@@ -157,30 +157,15 @@ class FurUHomeDashboard extends StatelessWidget {
                 .take(2)
                 .toList(),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 28),
           _RehomeBanner(
             onTap: () =>
                 openWorkflow(context, app.newDraft(SubmissionKind.rehome)),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 32),
           const _JourneyCard(),
-          const SizedBox(height: 14),
-          TextButton.icon(
-            onPressed: () => _showStory(context),
-            icon: const Icon(Icons.favorite_border_rounded, size: 18),
-            label: const Text('Our story · FurYou × WHELPS'),
-          ),
-          const SizedBox(height: 4),
-          OutlinedButton.icon(
-            onPressed: () => openRescue(context),
-            icon: const Icon(Icons.support_agent_rounded, size: 19),
-            label: const Text('Contact for Rescue'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-              side: BorderSide(color: Theme.of(context).colorScheme.outline),
-              backgroundColor: FurUColors.card(context),
-            ),
-          ),
+          const SizedBox(height: 28),
+          const _HomeSupport(),
         ],
       ),
     );
@@ -906,54 +891,138 @@ class _RehomeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: Theme.of(context).brightness == Brightness.dark
-        ? Theme.of(context).colorScheme.primaryContainer
-        : const Color(0xFFFFDAB4),
-    borderRadius: BorderRadius.circular(22),
+    color: const Color(0xFF3C2D24),
+    borderRadius: BorderRadius.circular(24),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: [
-            Icon(
-              Icons.home_outlined,
-              size: 39,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'A fresh start for every pet.',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontFamily: 'Fraunces',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
+        padding: const EdgeInsets.all(22),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final showPortrait =
+                constraints.maxWidth >= 270 &&
+                MediaQuery.textScalerOf(context).scale(14) < 20;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.cottage_outlined,
+                      size: 17,
+                      color: Color(0xFFF2BE89),
                     ),
+                    SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'A FRESH START',
+                        style: TextStyle(
+                          fontSize: 10,
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFF2BE89),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 19),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Their next chapter\nstarts with you.',
+                            style: TextStyle(
+                              fontFamily: 'Fraunces',
+                              fontSize: 26,
+                              height: 1.12,
+                              letterSpacing: -.6,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFFFF5E9),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Help a pet find a home that feels right.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.5,
+                              color: Color(0xFFDECCBC),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (showPortrait) ...[
+                      const SizedBox(width: 14),
+                      // Reuse the center portrait in the Home artwork atlas.
+                      ExcludeSemantics(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(48),
+                          child: SizedBox(
+                            width: 86,
+                            height: 116,
+                            child: OverflowBox(
+                              alignment: Alignment.topLeft,
+                              minWidth: 258,
+                              maxWidth: 258,
+                              minHeight: 172,
+                              maxHeight: 172,
+                              child: Transform.translate(
+                                offset: const Offset(-86, -6),
+                                child: Image.asset(
+                                  'assets/brand/home-action-pets.png',
+                                  width: 258,
+                                  height: 172,
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 13,
                   ),
-                  const SizedBox(height: 3),
-                  const Text(
-                    'We’ll guide you, one caring step at a time.',
-                    style: TextStyle(fontSize: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9DEC0),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: Theme.of(context).colorScheme.surface
-                  .withValues(alpha: .72),
-              child: Icon(
-                Icons.arrow_forward_rounded,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ],
+                  child: const Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Start rehoming',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF3C2D24),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 20,
+                        color: Color(0xFF3C2D24),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     ),
@@ -964,52 +1033,83 @@ class _JourneyCard extends StatelessWidget {
   const _JourneyCard();
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: FurUColors.card(context),
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'A LITTLE CARE. A LIFETIME OF LOVE.',
-          style: TextStyle(
-            fontSize: 9,
-            letterSpacing: 1.2,
-            color: Color(0xFFB65318),
-            fontWeight: FontWeight.w900,
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'BEFORE YOU ADOPT',
+            style: TextStyle(
+              fontSize: 10,
+              letterSpacing: 1.5,
+              color: scheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Your journey home',
-          style: Theme.of(context).textTheme.headlineMedium,
-        ),
-        const SizedBox(height: 5),
-        const Text('A thoughtful match, one caring step at a time.'),
-        const SizedBox(height: 18),
-        const _JourneyStep(
-          number: '01',
-          title: 'Find your companion',
-          body: 'Explore profiles, personalities, and care needs.',
-        ),
-        const _JourneyStep(
-          number: '02',
-          title: 'Tell us about your home',
-          body: 'Create your profile and complete the adoption assessment.',
-        ),
-        const _JourneyStep(
-          number: '03',
-          title: 'Review, meet, and welcome',
-          body: 'Arrange a meeting and plan a supported transition home.',
-          last: true,
-        ),
-      ],
-    ),
-  );
+          const SizedBox(height: 9),
+          Text(
+            'A good match takes care.',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontSize: 26,
+              height: 1.15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Here’s what your adoption journey looks like.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 24),
+          const _JourneyStep(
+            number: '01',
+            title: 'Find your match',
+            body: 'Get to know their personality and care needs.',
+          ),
+          const _JourneyStep(
+            number: '02',
+            title: 'Tell us about you',
+            body: 'Share your home, experience, and plans for their care.',
+          ),
+          const _JourneyStep(
+            number: '03',
+            title: 'Meet. Connect. Welcome.',
+            body: 'After review, plan a meeting and the move home.',
+            last: true,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.verified_user_outlined,
+                size: 18,
+                color: scheme.primary,
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  'Every application is reviewed by the WHELPS team.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.5,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _JourneyStep extends StatelessWidget {
@@ -1026,47 +1126,158 @@ class _JourneyStep extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(bottom: last ? 0 : 15),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 38,
-          height: 38,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFD8B0),
-            borderRadius: BorderRadius.circular(13),
-          ),
-          child: Text(
-            number,
-            style: const TextStyle(
-              color: FurUColors.forest,
-              fontWeight: FontWeight.w900,
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: EdgeInsets.only(bottom: last ? 0 : 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 41 * MediaQuery.textScalerOf(context).scale(23) / 23,
+            child: Text(
+              number,
+              maxLines: 1,
+              style: TextStyle(
+                fontFamily: 'Fraunces',
+                fontSize: 23,
+                height: 1.2,
+                color: scheme.primary.withValues(alpha: .8),
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 13),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w800,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: scheme.onSurface,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 3),
-              Text(body, style: const TextStyle(fontSize: 12)),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  body,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.5,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+                if (!last) ...[
+                  const SizedBox(height: 16),
+                  Divider(
+                    height: 1,
+                    color: scheme.outlineVariant.withValues(alpha: .5),
+                  ),
+                ],
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeSupport extends StatelessWidget {
+  const _HomeSupport();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: FurUColors.card(context),
+      borderRadius: BorderRadius.circular(22),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          _SupportLink(
+            icon: Icons.support_agent_rounded,
+            title: 'Contact for Rescue',
+            subtitle: 'Find animal-welfare contacts',
+            onTap: () => openRescue(context),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Divider(
+              height: 1,
+              color: scheme.outlineVariant.withValues(alpha: .5),
+            ),
+          ),
+          _SupportLink(
+            icon: Icons.favorite_border_rounded,
+            title: 'The care behind FurYou',
+            subtitle: 'Our story with WHELPS',
+            onTap: () => _showStory(context),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SupportLink extends StatelessWidget {
+  final IconData icon;
+  final String title, subtitle;
+  final VoidCallback onTap;
+  const _SupportLink({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: scheme.primary),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      height: 1.4,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: scheme.onSurfaceVariant,
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 void _showStory(BuildContext context) => showModalBottomSheet<void>(
